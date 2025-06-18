@@ -95,7 +95,7 @@ const dataset = {
         title: "1080p"
     },
     
-    // El Chavo del 8 - Primeros 3 episodios
+    // El Chavo del 8 - Episodio 1 con tu magnet link
     "tt0229889:1:1": {
         id: "tt0229889:1:1",
         type: "series",
@@ -110,8 +110,11 @@ const dataset = {
         poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         runtime: "30 min",
-        // URL de ejemplo - reemplazar con stream real
-        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        // Tu magnet link para The Avengers 2012
+        infoHash: "1956751B7227B131471EBDD41F9AA2536613A376",
+        magnetUri: "magnet:?xt=urn:btih:1956751B7227B131471EBDD41F9AA2536613A376&dn=The.avengers.2012.1080p-dual-lat.mp4&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.demonii.com%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2ftracker.torrent.eu.org%3a451%2fannounce&tr=udp%3a%2f%2fexplodie.org%3a6969%2fannounce",
+        sources: ["dht:1956751B7227B131471EBDD41F9AA2536613A376"],
+        title: "1080p Dual Latino"
     },
     
     "tt0229889:1:2": {
@@ -217,6 +220,12 @@ builder.defineStreamHandler(function(args) {
             sources: item.sources
         };
         
+        // Si hay un magnet URI, agregarlo como información adicional
+        if (item.magnetUri) {
+            console.log("Magnet URI available:", item.magnetUri);
+            // El infoHash y sources ya están configurados para torrents
+        }
+        
         // Limpiar propiedades undefined
         Object.keys(stream).forEach(key => {
             if (stream[key] === undefined) {
@@ -289,6 +298,7 @@ serveHTTP(addonInterface, { port: port }).then(() => {
     console.log(`✅ Stremio addon server running on port ${port}`);
     console.log(`🌐 Addon URL: http://localhost:${port}/manifest.json`);
     console.log(`📱 Install in Stremio: http://localhost:${port}/manifest.json`);
+    console.log(`🎬 El Chavo del 8 Episodio 1 configurado con magnet link`);
 }).catch(err => {
     console.error("❌ Error starting server:", err);
     process.exit(1);
