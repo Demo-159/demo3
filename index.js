@@ -92,7 +92,7 @@ const dataset = {
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-2-vector-logo.png",
         runtime: "93 min",
         // Stream directo de Pixeldrain
-        url: "https://pixeldrain.com/api/file/uVTP2kzb",
+        url: "https://store-na-phx-1.gofile.io/download/web/37817e78-be2e-49b9-b5b4-90339fbde307/Shrek.2001.1080p-dual-lat.mp4",
         title: "Shrek 2 (2004)"
     },
     
