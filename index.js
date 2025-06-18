@@ -63,42 +63,37 @@ const dataset = {
     "demo_movie_1": {
         id: "demo_movie_1",
         type: "movie",
-        name: "Big Buck Bunny",
-        genre: ["Comedy", "Animation"],
-        year: 2008,
-        director: "Sacha Goedegebure",
-        cast: ["Frank Vitale", "Maureen McMahon"],
-        description: "A large and lovable rabbit deals with three tiny bullies, led by a flying squirrel, who are determined to squelch his happiness.",
-        poster: "https://peach.blender.org/wp-content/uploads/bbb-splash.png",
-        background: "https://peach.blender.org/wp-content/uploads/bbb-splash.png",
-        logo: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
-        runtime: "10 min",
-        // Stream HLS directo - ACTUALIZADO CON TU SERVIDOR
+        name: "Shrek",
+        genre: ["Comedy", "Animation", "Adventure", "Family"],
+        year: 2001,
+        director: "Andrew Adamson, Vicky Jenson",
+        cast: ["Mike Myers", "Eddie Murphy", "Cameron Diaz", "John Lithgow"],
+        description: "A mean lord exiles fairytale creatures to the swamp of a grumpy ogre, who must go on a quest and rescue a princess for the lord in order to get his land back.",
+        poster: "https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+        background: "https://images.justwatch.com/backdrop/178788925/s1920/shrek.jpg",
+        logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-vector-logo.png",
+        runtime: "90 min",
+        // Stream directo de Pixeldrain
         url: "https://pixeldrain.com/api/file/uVTP2kza",
-        title: "HLS Stream",
-        // Configuraciones adicionales para mejorar compatibilidad
-        behaviorHints: {
-            notWebReady: false,
-            bingeGroup: "big-buck-bunny"
-        }
+        title: "Shrek (2001)"
     },
     
     "demo_movie_2": {
         id: "demo_movie_2", 
         type: "movie",
-        name: "Sintel",
-        genre: ["Action", "Adventure", "Fantasy"],
-        year: 2010,
-        director: "Colin Levy",
-        cast: ["Halina Reijn", "Thom Hoffman"],
-        description: "A lonely young woman, Sintel, helps and befriends a dragon, whom she calls Scales. But when he is kidnapped by an adult dragon, Sintel decides to embark on a dangerous quest to find her lost friend Scales.",
-        poster: "https://durian.blender.org/wp-content/uploads/2010/09/sintel_poster_small.jpg",
-        background: "https://durian.blender.org/wp-content/uploads/2010/09/sintel_poster_small.jpg",
-        runtime: "14 min",
-        // Torrent con magnet link
-        infoHash: "08ada5a7a6183aae1e09d831df6748d566095a10",
-        sources: ["dht:08ada5a7a6183aae1e09d831df6748d566095a10"],
-        title: "1080p"
+        name: "Shrek 2",
+        genre: ["Comedy", "Animation", "Adventure", "Family"],
+        year: 2004,
+        director: "Andrew Adamson, Kelly Asbury, Conrad Vernon",
+        cast: ["Mike Myers", "Eddie Murphy", "Cameron Diaz", "Julie Andrews"],
+        description: "Shrek and Fiona travel to the Kingdom of Far Far Away, where Fiona's parents are King and Queen, to celebrate their marriage. When they arrive, they find they are not as welcome as they thought they would be.",
+        poster: "https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LWI3MjUtMTMzZDU0OWJiOTQ4XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+        background: "https://images.justwatch.com/backdrop/178788932/s1920/shrek-2.jpg",
+        logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-2-vector-logo.png",
+        runtime: "93 min",
+        // Stream directo de Pixeldrain
+        url: "https://pixeldrain.com/api/file/uVTP2kzb",
+        title: "Shrek 2 (2004)"
     },
     
     // El Chavo del 8 - Episodio 1 con tu magnet link
@@ -220,50 +215,7 @@ builder.defineStreamHandler(function(args) {
     if (dataset[args.id]) {
         const item = dataset[args.id];
         
-        // Para Big Buck Bunny, ofrecer múltiples opciones de stream
-        if (args.id === "demo_movie_1") {
-            const streams = [
-                // Opción 1: Stream HLS original con configuración mejorada
-                {
-                    title: "🎬 HLS Original (Gumlet)",
-                    url: "https://pixeldrain.com/api/file/uVTP2kza",
-                    behaviorHints: {
-                        notWebReady: false,
-                        bingeGroup: "big-buck-bunny-hls"
-                    },
-                    httpHeaders: {
-                        'User-Agent': 'Stremio/4.4.0',
-                        'Accept': '*/*',
-                        'Accept-Language': 'en-US,en;q=0.9',
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
-                    }
-                },
-                // Opción 2: Fallback MP4 directo (más compatible)
-                {
-                    title: "📹 MP4 Directo (Fallback)",
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                    behaviorHints: {
-                        notWebReady: false,
-                        bingeGroup: "big-buck-bunny-mp4"
-                    }
-                },
-                // Opción 3: Stream HLS alternativo público para pruebas
-                {
-                    title: "🧪 HLS Test Stream",
-                    url: "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
-                    behaviorHints: {
-                        notWebReady: false,
-                        bingeGroup: "big-buck-bunny-test"
-                    }
-                }
-            ];
-            
-            console.log("Multiple streams configured for Big Buck Bunny");
-            return Promise.resolve({ streams: streams });
-        }
-        
-        // Para otros contenidos, usar la lógica original
+        // Configuración base del stream
         const stream = {
             title: item.title || "Demo Stream",
             url: item.url,
@@ -271,21 +223,23 @@ builder.defineStreamHandler(function(args) {
             sources: item.sources
         };
         
-        // Configuraciones especiales para HLS
-        if (item.url && item.url.includes('.m3u8')) {
+        // Configuraciones especiales para Pixeldrain
+        if (item.url && item.url.includes('pixeldrain.com')) {
             stream.behaviorHints = {
                 notWebReady: false,
                 bingeGroup: item.id
             };
             
-            // Headers adicionales para HLS
+            // Headers adicionales para Pixeldrain
             stream.httpHeaders = {
                 'User-Agent': 'Stremio/4.4.0',
                 'Accept': '*/*',
-                'Accept-Language': 'en-US,en;q=0.9'
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://pixeldrain.com/',
+                'Origin': 'https://pixeldrain.com'
             };
             
-            console.log("HLS stream configured with headers and behavior hints");
+            console.log("Pixeldrain stream configured with headers");
         }
         
         // Si hay un magnet URI, agregarlo como información adicional
@@ -366,8 +320,9 @@ serveHTTP(addonInterface, { port: port }).then(() => {
     console.log(`✅ Stremio addon server running on port ${port}`);
     console.log(`🌐 Addon URL: http://localhost:${port}/manifest.json`);
     console.log(`📱 Install in Stremio: http://localhost:${port}/manifest.json`);
-    console.log(`🎬 Big Buck Bunny configurado con servidor HLS: https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/main.m3u8`);
-    console.log(`🎭 El Chavo del 8 Episodio 1 configurado con magnet link`);
+    console.log(`🎬 Shrek (2001) configurado con Pixeldrain: ${dataset.demo_movie_1.url}`);
+    console.log(`🎭 Shrek 2 (2004) configurado con Pixeldrain: ${dataset.demo_movie_2.url}`);
+    console.log(`📺 El Chavo del 8 - 3 episodios disponibles`);
 }).catch(err => {
     console.error("❌ Error starting server:", err);
     process.exit(1);
