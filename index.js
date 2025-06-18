@@ -49,14 +49,6 @@ const manifest = {
     // Prefijos de IDs soportados
     "idPrefixes": ["demo_", "tt"],
     
-    // IMPORTANTE: Para que aparezca en búsquedas
-    "behaviorHints": {
-        "adult": false,
-        "p2p": true,
-        "configurable": true,
-        "configurationRequired": false
-    }
-    
     // Configuración del comportamiento
     "behaviorHints": {
         "adult": false,
@@ -67,9 +59,9 @@ const manifest = {
 
 // Base de datos de contenido
 const dataset = {
-    // Películas - Usando IDs de IMDB reales para que aparezcan en búsquedas
-    "tt1825683": {
-        id: "tt1825683",
+    // Películas
+    "demo_movie_1": {
+        id: "demo_movie_1",
         type: "movie",
         name: "Big Buck Bunny",
         genre: ["Comedy", "Animation"],
@@ -81,13 +73,13 @@ const dataset = {
         background: "https://peach.blender.org/wp-content/uploads/bbb-splash.png",
         logo: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
         runtime: "10 min",
-        // Intentar con pCloud (puede no funcionar)
+        // Stream HLS directo - ACTUALIZADO CON TU SERVIDOR
         url: "https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/main.m3u8",
-title: "1080p Dual Latino M3U8"
+        title: "HLS Stream"
     },
     
-    "tt0371746": {
-        id: "tt0371746", 
+    "demo_movie_2": {
+        id: "demo_movie_2", 
         type: "movie",
         name: "Sintel",
         genre: ["Action", "Adventure", "Fantasy"],
@@ -222,40 +214,28 @@ builder.defineStreamHandler(function(args) {
     
     if (dataset[args.id]) {
         const item = dataset[args.id];
-        const streams = [];
-        
-        // Stream principal
-        const mainStream = {
+        const stream = {
             title: item.title || "Demo Stream",
             url: item.url,
             infoHash: item.infoHash,
             sources: item.sources
         };
         
-        // Limpiar propiedades undefined
-        Object.keys(mainStream).forEach(key => {
-            if (mainStream[key] === undefined) {
-                delete mainStream[key];
-            }
-        });
-        
-        streams.push(mainStream);
-        
-        // Si hay URL de backup, agregarla como stream adicional
-        if (item.backupUrl) {
-            streams.push({
-                title: "Backup Stream",
-                url: item.backupUrl
-            });
-        }
-        
         // Si hay un magnet URI, agregarlo como información adicional
         if (item.magnetUri) {
             console.log("Magnet URI available:", item.magnetUri);
+            // El infoHash y sources ya están configurados para torrents
         }
         
-        console.log("Streams found:", streams.length);
-        return Promise.resolve({ streams: streams });
+        // Limpiar propiedades undefined
+        Object.keys(stream).forEach(key => {
+            if (stream[key] === undefined) {
+                delete stream[key];
+            }
+        });
+        
+        console.log("Stream found:", stream);
+        return Promise.resolve({ streams: [stream] });
     } else {
         console.log("No stream found for:", args.id);
         return Promise.resolve({ streams: [] });
@@ -319,7 +299,8 @@ serveHTTP(addonInterface, { port: port }).then(() => {
     console.log(`✅ Stremio addon server running on port ${port}`);
     console.log(`🌐 Addon URL: http://localhost:${port}/manifest.json`);
     console.log(`📱 Install in Stremio: http://localhost:${port}/manifest.json`);
-    console.log(`🎬 El Chavo del 8 Episodio 1 configurado con magnet link`);
+    console.log(`🎬 Big Buck Bunny configurado con servidor HLS: https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/main.m3u8`);
+    console.log(`🎭 El Chavo del 8 Episodio 1 configurado con magnet link`);
 }).catch(err => {
     console.error("❌ Error starting server:", err);
     process.exit(1);
