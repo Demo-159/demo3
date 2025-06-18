@@ -5,7 +5,7 @@ const magnet = require("magnet-uri");
 const manifest = {
     "id": "org.demo.stremio-addon",
     "version": "1.0.0",
-    "name": "Demo Stremio Addon",
+    "name": "Recomendación",
     "description": "Addon de demostración con películas y series",
     "icon": "https://via.placeholder.com/256x256/FF6B6B/FFFFFF?text=DEMO",
     "background": "https://via.placeholder.com/1920x1080/4ECDC4/FFFFFF?text=DEMO+ADDON",
@@ -110,9 +110,7 @@ const dataset = {
         poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         runtime: "30 min",
-        // REEMPLAZA ESTE MAGNET CON EL TUYO:
-        // Ejemplo: fromMagnet("El Chavo del 8 - Episodio 1", "series", "magnet:?xt=urn:btih:1956751B7227B131471EBDD41F9AA2536613A376&dn=The.avengers.2012.1080p-dual-lat.mp4&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.demonii.com%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2ftracker.torrent.eu.org%3a451%2fannounce&tr=udp%3a%2f%2fexplodie.org%3a6969%2fannounce")
-        ...fromMagnet("El Chavo del 8 - Episodio 1", "series", "magnet:?xt=urn:btih:EJEMPLO123456789&dn=chavo+episodio+1")
+        fromMagnet("El Chavo del 8 - Episodio 1", "series", "magnet:?xt=urn:btih:EJEMPLO123456789&dn=chavo+episodio+1")
     },
     
     "tt0229889:1:2": {
@@ -129,8 +127,7 @@ const dataset = {
         poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         runtime: "30 min",
-        // REEMPLAZA ESTE MAGNET CON EL TUYO:
-        ...fromMagnet("El Chavo del 8 - Episodio 2", "series", "magnet:?xt=urn:btih:1956751B7227B131471EBDD41F9AA2536613A376&dn=The.avengers.2012.1080p-dual-lat.mp4&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.demonii.com%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2ftracker.torrent.eu.org%3a451%2fannounce&tr=udp%3a%2f%2fexplodie.org%3a6969%2fannounce")
+        fromMagnet("El Chavo del 8 - Episodio 2", "series", "magnet:?xt=urn:btih:1956751B7227B131471EBDD41F9AA2536613A376&dn=The.avengers.2012.1080p-dual-lat.mp4&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.demonii.com%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2ftracker.torrent.eu.org%3a451%2fannounce&tr=udp%3a%2f%2fexplodie.org%3a6969%2fannounce")
     },
     
     "tt0229889:1:3": {
