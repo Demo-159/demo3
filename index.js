@@ -74,7 +74,7 @@ const dataset = {
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-vector-logo.png",
         runtime: "90 min",
         // Stream directo de Pixeldrain
-        url: "https://pixeldrain.com/api/file/uVTP2kza",
+        url: "https://archive-video-proxy.davidmonrroy7.workers.dev/",
         title: "Shrek (2001)"
     },
     
