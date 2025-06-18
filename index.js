@@ -49,6 +49,14 @@ const manifest = {
     // Prefijos de IDs soportados
     "idPrefixes": ["demo_", "tt"],
     
+    // IMPORTANTE: Para que aparezca en búsquedas
+    "behaviorHints": {
+        "adult": false,
+        "p2p": true,
+        "configurable": true,
+        "configurationRequired": false
+    }
+    
     // Configuración del comportamiento
     "behaviorHints": {
         "adult": false,
@@ -59,9 +67,9 @@ const manifest = {
 
 // Base de datos de contenido
 const dataset = {
-    // Películas
-    "demo_movie_1": {
-        id: "demo_movie_1",
+    // Películas - Usando IDs de IMDB reales para que aparezcan en búsquedas
+    "tt1825683": {
+        id: "tt1825683",
         type: "movie",
         name: "Big Buck Bunny",
         genre: ["Comedy", "Animation"],
@@ -77,8 +85,8 @@ const dataset = {
         url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     },
     
-    "demo_movie_2": {
-        id: "demo_movie_2", 
+    "tt0371746": {
+        id: "tt0371746", 
         type: "movie",
         name: "Sintel",
         genre: ["Action", "Adventure", "Fantasy"],
