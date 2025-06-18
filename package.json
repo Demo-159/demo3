@@ -1,12 +1,30 @@
 {
-  "name": "stremio-example-addon",
+  "name": "stremio-demo-addon",
   "version": "1.0.0",
+  "description": "Demo Stremio addon with movies and series",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "stremio",
+    "addon",
+    "streaming",
+    "movies",
+    "series"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
   "dependencies": {
-    "stremio-addon-sdk": "^1.1.11",
+    "stremio-addon-sdk": "^1.6.8",
     "magnet-uri": "^5.2.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
