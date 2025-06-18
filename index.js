@@ -88,7 +88,7 @@ const dataset = {
         director: "Andrew Adamson, Kelly Asbury, Conrad Vernon",
         cast: ["Mike Myers", "Eddie Murphy", "Cameron Díaz", "Julie Andrews"],
         description: "Shrek y Fiona regresan de su luna de miel para recibir una invitación de los padres de Fiona para cenar en el Reino de Muy Muy Lejano.",
-        poster: "https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LWI3MjUtMTMzZDU0OWJiOTQ4XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+        poster: "https://m.media-amazon.com/images/M/MV5BMzNmNjQ1NmUtNzhiZS00YWE2LTg4N2ItZTA2ODdmOTMwOTQ1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
         background: "https://images.justwatch.com/backdrop/178788932/s1920/shrek-2.jpg",
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-2-vector-logo.png",
         runtime: "93 min",
