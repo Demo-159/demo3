@@ -95,39 +95,59 @@ const dataset = {
         title: "1080p"
     },
     
-    // Serie con 2 episodios
-    "demo_series_1:1:1": {
-        id: "demo_series_1:1:1",
+    // El Chavo del 8 - Primeros 3 episodios
+    "tt0229889:1:1": {
+        id: "tt0229889:1:1",
         type: "series",
-        name: "Tears of Steel - Episode 1",
-        genre: ["Sci-Fi", "Action"],
-        year: 2012,
+        name: "El Chavo del 8 - Episodio 1",
+        genre: ["Comedy", "Family"],
+        year: 1971,
         episode: 1,
         season: 1,
         seriesId: "tt0229889",
-        seriesName: "Tears of Steel",
-        description: "The film's premise is about a group of warriors and scientists, who gather at the Oude Kerk in Amsterdam to stage a crucial event from the past, in a desperate attempt to rescue the world from destructive robots.",
-        poster: "https://media.xiph.org/tearsofsteel/tearsofsteel-poster.png",
-        background: "https://media.xiph.org/tearsofsteel/tearsofsteel-poster.png",
-        runtime: "12 min",
-        url: "https://media.xiph.org/tearsofsteel/tearsofsteel-surround.mp4"
+        seriesName: "El Chavo del 8",
+        description: "Primer episodio de la icónica serie mexicana de comedia protagonizada por Roberto Gómez Bolaños 'Chespirito'.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        runtime: "30 min",
+        // URL de ejemplo - reemplazar con stream real
+        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     },
     
     "tt0229889:1:2": {
         id: "tt0229889:1:2",
         type: "series", 
-        name: "Tears of Steel - Episode 2",
-        genre: ["Sci-Fi", "Action"],
-        year: 2012,
+        name: "El Chavo del 8 - Episodio 2",
+        genre: ["Comedy", "Family"],
+        year: 1971,
         episode: 2,
         season: 1,
-        seriesId: "demo_series_1",
-        seriesName: "Tears of Steel",
-        description: "Continuation of the epic battle against the destructive robots. Our heroes must make difficult decisions to save humanity.",
-        poster: "https://media.xiph.org/tearsofsteel/tearsofsteel-poster.png",
-        background: "https://media.xiph.org/tearsofsteel/tearsofsteel-poster.png",
-        runtime: "12 min",
-        url: "https://media.xiph.org/tearsofsteel/tearsofsteel-surround.mp4"
+        seriesId: "tt0229889",
+        seriesName: "El Chavo del 8",
+        description: "Segundo episodio de la serie donde El Chavo continúa con sus travesuras en la vecindad.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        runtime: "30 min",
+        // URL de ejemplo - reemplazar con stream real
+        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    
+    "tt0229889:1:3": {
+        id: "tt0229889:1:3",
+        type: "series", 
+        name: "El Chavo del 8 - Episodio 3",
+        genre: ["Comedy", "Family"],
+        year: 1971,
+        episode: 3,
+        season: 1,
+        seriesId: "tt0229889",
+        seriesName: "El Chavo del 8",
+        description: "Tercer episodio donde conocemos más sobre los personajes de la vecindad y sus divertidas situaciones.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        runtime: "30 min",
+        // URL de ejemplo - reemplazar con stream real
+        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
     }
 };
 
