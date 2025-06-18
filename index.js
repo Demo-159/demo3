@@ -124,7 +124,7 @@ const dataset = {
         background: "https://images.justwatch.com/backdrop/10890619/s1920/shrek-forever-after",
         logo: "https://seeklogo.com/images/S/shrek-forever-after-logo-689A537D1C-seeklogo.com.png",
         runtime: "93 min",
-        url: "https://archive-video-proxy.davidmonrroy7.workers.dev/shrek-para-siempre-2010",
+        url: "https://archive-video-proxy.davidmonrroy7.workers.dev",
         title: "Shrek Para Siempre (2010) - 1080p Latino"
     },
     
