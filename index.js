@@ -75,7 +75,12 @@ const dataset = {
         runtime: "10 min",
         // Stream HLS directo - ACTUALIZADO CON TU SERVIDOR
         url: "https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/main.m3u8",
-        title: "HLS Stream"
+        title: "HLS Stream",
+        // Configuraciones adicionales para mejorar compatibilidad
+        behaviorHints: {
+            notWebReady: false,
+            bingeGroup: "big-buck-bunny"
+        }
     },
     
     "demo_movie_2": {
@@ -214,12 +219,31 @@ builder.defineStreamHandler(function(args) {
     
     if (dataset[args.id]) {
         const item = dataset[args.id];
+        
+        // Configuración base del stream
         const stream = {
             title: item.title || "Demo Stream",
             url: item.url,
             infoHash: item.infoHash,
             sources: item.sources
         };
+        
+        // Configuraciones especiales para HLS
+        if (item.url && item.url.includes('.m3u8')) {
+            stream.behaviorHints = {
+                notWebReady: false,
+                bingeGroup: item.id
+            };
+            
+            // Headers adicionales para HLS
+            stream.httpHeaders = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Referer': 'https://video.gumlet.io/',
+                'Origin': 'https://video.gumlet.io'
+            };
+            
+            console.log("HLS stream configured with headers and behavior hints");
+        }
         
         // Si hay un magnet URI, agregarlo como información adicional
         if (item.magnetUri) {
