@@ -93,7 +93,7 @@ const dataset = {
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-2-vector-logo.png",
         runtime: "93 min",
         imdbRating: "7.3",
-        url: "https://store-na-phx-1.gofile.io/download/web/37817e78-be2e-49b9-b5b4-90339fbde307/Shrek.2001.1080p-dual-lat.mp4",
+        url: "https://archive.org/download/THREN/THREN.mkv",
         title: "Shrek 2 (2004) - 1080p Latino",
         quality: "1080p",
         language: "Latino"
