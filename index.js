@@ -113,7 +113,7 @@ const dataset = {
         logo: "https://seeklogo.com/images/S/shrek-the-third-logo-6B8B8B5F5E-seeklogo.com.png",
         runtime: "93 min",
         imdbRating: "6.1",
-        url: "https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/684cdcc9c4269590ab78ef00_0_540p.m3u8",
+        url: "https://play.gumlet.io/embed/684cdcc9c4269590ab78ef00",
         title: "Shrek Tercero (2007) - 1080p Latino",
         quality: "1080p",
         language: "Latino"
