@@ -220,7 +220,50 @@ builder.defineStreamHandler(function(args) {
     if (dataset[args.id]) {
         const item = dataset[args.id];
         
-        // Configuración base del stream
+        // Para Big Buck Bunny, ofrecer múltiples opciones de stream
+        if (args.id === "demo_movie_1") {
+            const streams = [
+                // Opción 1: Stream HLS original con configuración mejorada
+                {
+                    title: "🎬 HLS Original (Gumlet)",
+                    url: "https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/main.m3u8",
+                    behaviorHints: {
+                        notWebReady: false,
+                        bingeGroup: "big-buck-bunny-hls"
+                    },
+                    httpHeaders: {
+                        'User-Agent': 'Stremio/4.4.0',
+                        'Accept': '*/*',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                },
+                // Opción 2: Fallback MP4 directo (más compatible)
+                {
+                    title: "📹 MP4 Directo (Fallback)",
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                    behaviorHints: {
+                        notWebReady: false,
+                        bingeGroup: "big-buck-bunny-mp4"
+                    }
+                },
+                // Opción 3: Stream HLS alternativo público para pruebas
+                {
+                    title: "🧪 HLS Test Stream",
+                    url: "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
+                    behaviorHints: {
+                        notWebReady: false,
+                        bingeGroup: "big-buck-bunny-test"
+                    }
+                }
+            ];
+            
+            console.log("Multiple streams configured for Big Buck Bunny");
+            return Promise.resolve({ streams: streams });
+        }
+        
+        // Para otros contenidos, usar la lógica original
         const stream = {
             title: item.title || "Demo Stream",
             url: item.url,
@@ -237,9 +280,9 @@ builder.defineStreamHandler(function(args) {
             
             // Headers adicionales para HLS
             stream.httpHeaders = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Referer': 'https://video.gumlet.io/',
-                'Origin': 'https://video.gumlet.io'
+                'User-Agent': 'Stremio/4.4.0',
+                'Accept': '*/*',
+                'Accept-Language': 'en-US,en;q=0.9'
             };
             
             console.log("HLS stream configured with headers and behavior hints");
