@@ -105,7 +105,7 @@ const dataset = {
         episode: 1,
         season: 1,
         seriesId: "tt0229889",
-        seriesName: "El Chavo del 8",
+        seriesName: "El Chavo del 9",
         description: "Primer episodio de la icónica serie mexicana de comedia protagonizada por Roberto Gómez Bolaños 'Chespirito'.",
         poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
