@@ -104,7 +104,7 @@ const dataset = {
         year: 2012,
         episode: 1,
         season: 1,
-        seriesId: "demo_series_1",
+        seriesId: "tt0229889",
         seriesName: "Tears of Steel",
         description: "The film's premise is about a group of warriors and scientists, who gather at the Oude Kerk in Amsterdam to stage a crucial event from the past, in a desperate attempt to rescue the world from destructive robots.",
         poster: "https://media.xiph.org/tearsofsteel/tearsofsteel-poster.png",
@@ -113,8 +113,8 @@ const dataset = {
         url: "https://media.xiph.org/tearsofsteel/tearsofsteel-surround.mp4"
     },
     
-    "demo_series_1:1:2": {
-        id: "demo_series_1:1:2",
+    "tt0229889:1:2": {
+        id: "tt0229889:1:2",
         type: "series", 
         name: "Tears of Steel - Episode 2",
         genre: ["Sci-Fi", "Action"],
