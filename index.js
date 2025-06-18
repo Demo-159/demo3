@@ -68,7 +68,7 @@ const dataset = {
         director: "Andrew Adamson, Vicky Jenson",
         cast: ["Mike Myers", "Eddie Murphy", "Cameron Díaz", "John Lithgow"],
         description: "Un ogro malhumorado vive tranquilo en su pantano hasta que un día su preciada soledad se ve interrumpida por una invasión de personajes de cuentos de hadas que han sido exiliados de su reino por el malvado Lord Farquaad.",
-        poster: "https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+        poster: "https://m.media-amazon.com/images/M/MV5BOWIzMmI4ZDktZTNmZS00YzQ4LWFhYzgtNWQ4YjgwMGJhNDYwXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
         background: "https://images.justwatch.com/backdrop/178788925/s1920/shrek.jpg",
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-vector-logo.png",
         runtime: "90 min",
