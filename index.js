@@ -113,7 +113,7 @@ const dataset = {
         logo: "https://seeklogo.com/images/S/shrek-the-third-logo-6B8B8B5F5E-seeklogo.com.png",
         runtime: "93 min",
         imdbRating: "6.1",
-        url: "https://archive-video-proxy.davidmonrroy7.workers.dev/shrek-tercero-2007",
+        url: "https://t66.pcloud.com/cWZdd16DcZPX8wWs7ZZZQiRBVkZQ5ZZsVLZZDgWreZGRZM5Zc8ZiHZP4Zb8ZL4Z3QZO0ZYQZPQZQXZi4Z4mZkzZZ6THu5ZA2o4V1RTxiy9obStCbJbQkGB0Cz7/v1a0/index.m3u8",
         title: "Shrek Tercero (2007) - 1080p Latino",
         quality: "1080p",
         language: "Latino"
