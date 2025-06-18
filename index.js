@@ -73,7 +73,7 @@ const dataset = {
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-vector-logo.png",
         runtime: "90 min",
         imdbRating: "7.9",
-        url: "https://archive-video-proxy.davidmonrroy7.workers.dev/shrek-2001",
+        url: "https://archive.org/download/dercro-2040/DERCRO2040.mkv",
         title: "Shrek (2001) - 1080p Latino",
         quality: "1080p",
         language: "Latino"
