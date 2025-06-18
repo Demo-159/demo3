@@ -1,26 +1,18 @@
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 const magnet = require("magnet-uri");
 
-// Configuración del addon
+// Enhanced addon configuration
 const manifest = {
     "id": "org.demo.stremio-addon-latino",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Addon Demo Stremio Latino",
-    "description": "Addon de demostración con películas y series en español latino",
+    "description": "Addon de demostración con películas y series en español latino - Contenido familiar y entretenimiento",
     "icon": "https://via.placeholder.com/256x256/FF6B6B/FFFFFF?text=LATINO",
     "background": "https://via.placeholder.com/1920x1080/4ECDC4/FFFFFF?text=ADDON+LATINO",
     
-    // Recursos que proporcionará el addon
-    "resources": [
-        "catalog",
-        "stream",
-        "meta"
-    ],
-    
-    // Tipos de contenido soportados
+    "resources": ["catalog", "stream", "meta"],
     "types": ["movie", "series"],
     
-    // Catálogos disponibles
     "catalogs": [
         {
             type: "movie",
@@ -30,6 +22,10 @@ const manifest = {
                 {
                     name: "genre",
                     options: ["Acción", "Comedia", "Drama", "Terror", "Ciencia Ficción", "Animación", "Aventura", "Familiar"]
+                },
+                {
+                    name: "skip",
+                    isRequired: false
                 }
             ]
         },
@@ -41,152 +37,190 @@ const manifest = {
                 {
                     name: "genre",
                     options: ["Comedia", "Animación", "Aventura", "Familiar", "Terror", "Drama"]
+                },
+                {
+                    name: "skip",
+                    isRequired: false
                 }
             ]
         }
     ],
     
-    // Prefijos de IDs soportados
     "idPrefixes": ["latino_", "tt"],
     
-    // Configuración del comportamiento
     "behaviorHints": {
         "adult": false,
         "p2p": true,
-        "configurable": true
+        "configurable": true,
+        "configurationRequired": false
     }
 };
 
-// Base de datos de contenido
+// Enhanced dataset with better organization
 const dataset = {
-    // Películas de Shrek
-    "latino_pelicula_1": {
-        id: "latino_pelicula_1",
+    // Shrek Movies Collection with IMDB IDs
+    "tt0126029": {
+        id: "tt0126029",
         type: "movie",
         name: "Shrek",
         genre: ["Comedia", "Animación", "Aventura", "Familiar"],
         year: 2001,
         director: "Andrew Adamson, Vicky Jenson",
         cast: ["Mike Myers", "Eddie Murphy", "Cameron Díaz", "John Lithgow"],
-        description: "Un ogro malhumorado vive tranquilo en su pantano hasta que un día su preciada soledad se ve interrumpida por una invasión de personajes de cuentos de hadas que han sido exiliados de su reino por el malvado Lord Farquaad. Decidido a salvar su hogar, Shrek hace un trato con Farquaad y se dispone a rescatar a la princesa Fiona para ser la novia del señor. Para ello estará acompañado por un burro parlanchín.",
+        description: "Un ogro malhumorado vive tranquilo en su pantano hasta que un día su preciada soledad se ve interrumpida por una invasión de personajes de cuentos de hadas que han sido exiliados de su reino por el malvado Lord Farquaad.",
         poster: "https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
         background: "https://images.justwatch.com/backdrop/178788925/s1920/shrek.jpg",
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-vector-logo.png",
         runtime: "90 min",
+        imdbRating: "7.9",
         url: "https://archive-video-proxy.davidmonrroy7.workers.dev/shrek-2001",
-        title: "Shrek (2001) - 1080p Latino"
+        title: "Shrek (2001) - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
     },
     
-    "latino_pelicula_2": {
-        id: "latino_pelicula_2", 
+    "tt0298148": {
+        id: "tt0298148", 
         type: "movie",
         name: "Shrek 2",
         genre: ["Comedia", "Animación", "Aventura", "Familiar"],
         year: 2004,
         director: "Andrew Adamson, Kelly Asbury, Conrad Vernon",
         cast: ["Mike Myers", "Eddie Murphy", "Cameron Díaz", "Julie Andrews"],
-        description: "Shrek y Fiona regresan de su luna de miel para recibir una invitación de los padres de Fiona para cenar en el Reino de Muy Muy Lejano. Sin embargo, nadie podía imaginar lo difícil que resultaría para Shrek conocer a sus suegros. Junto con Burro, la pareja viaja al reino, donde los esperan muchas sorpresas y aventuras divertidas.",
+        description: "Shrek y Fiona regresan de su luna de miel para recibir una invitación de los padres de Fiona para cenar en el Reino de Muy Muy Lejano.",
         poster: "https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LWI3MjUtMTMzZDU0OWJiOTQ4XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
         background: "https://images.justwatch.com/backdrop/178788932/s1920/shrek-2.jpg",
         logo: "https://logoeps.com/wp-content/uploads/2013/12/shrek-2-vector-logo.png",
         runtime: "93 min",
+        imdbRating: "7.3",
         url: "https://store-na-phx-1.gofile.io/download/web/37817e78-be2e-49b9-b5b4-90339fbde307/Shrek.2001.1080p-dual-lat.mp4",
-        title: "Shrek 2 (2004) - 1080p Latino"
+        title: "Shrek 2 (2004) - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
     },
 
-    "latino_pelicula_3": {
-        id: "latino_pelicula_3",
+    "tt0413267": {
+        id: "tt0413267",
         type: "movie",
         name: "Shrek Tercero",
         genre: ["Comedia", "Animación", "Aventura", "Familiar"],
         year: 2007,
         director: "Chris Miller, Raman Hui",
         cast: ["Mike Myers", "Cameron Díaz", "Eddie Murphy", "Antonio Banderas"],
-        description: "Cuando el Rey Harold de Muy Muy Lejano se encuentra en su lecho de muerte, Shrek debe encontrar a un heredero para el trono o se convertirá en el nuevo rey. El candidato más probable es Arturo, el sobrino del rey, pero resulta ser un adolescente tímido e inadaptado. Mientras tanto, el Príncipe Encantador planea vengarse de Shrek.",
+        description: "Cuando el Rey Harold de Muy Muy Lejano se encuentra en su lecho de muerte, Shrek debe encontrar a un heredero para el trono o se convertirá en el nuevo rey.",
         poster: "https://m.media-amazon.com/images/M/MV5BOTgyMjc3ODk2MV5BMl5BanBnXkFtZTcwMjY0MjEzMw@@._V1_SX300.jpg",
         background: "https://images.justwatch.com/backdrop/178788939/s1920/shrek-the-third.jpg",
         logo: "https://seeklogo.com/images/S/shrek-the-third-logo-6B8B8B5F5E-seeklogo.com.png",
         runtime: "93 min",
+        imdbRating: "6.1",
         url: "https://archive-video-proxy.davidmonrroy7.workers.dev/shrek-tercero-2007",
-        title: "Shrek Tercero (2007) - 1080p Latino"
+        title: "Shrek Tercero (2007) - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
     },
 
-    "latino_pelicula_4": {
-        id: "latino_pelicula_4",
+    "tt0892791": {
+        id: "tt0892791",
         type: "movie",
         name: "Shrek Para Siempre",
         genre: ["Comedia", "Animación", "Aventura", "Familiar"],
         year: 2010,
         director: "Mike Mitchell",
         cast: ["Mike Myers", "Cameron Díaz", "Eddie Murphy", "Antonio Banderas"],
-        description: "Shrek está pasando por una crisis de la mediana edad. Ya no se siente como un verdadero ogro aterrador, sino como un padre de familia domesticado. Desesperado por sentirse como un ogro de verdad otra vez, hace un trato con Rumpelstiltskin. Pero es engañado y transportado a una realidad alternativa donde Rumpel es el rey, los ogros son cazados y él nunca conoció a Fiona.",
+        description: "Shrek está pasando por una crisis de la mediana edad. Ya no se siente como un verdadero ogro aterrador, sino como un padre de familia domesticado.",
         poster: "https://m.media-amazon.com/images/M/MV5BNjA0MjYyOTU3MF5BMl5BanBnXkFtZTcwMTg1MjY0Mw@@._V1_SX300.jpg",
         background: "https://images.justwatch.com/backdrop/10890619/s1920/shrek-forever-after",
         logo: "https://seeklogo.com/images/S/shrek-forever-after-logo-689A537D1C-seeklogo.com.png",
         runtime: "93 min",
-        url: "https://archive-video-proxy.davidmonrroy7.workers.dev",
-        title: "Shrek Para Siempre (2010) - 1080p Latino"
+        imdbRating: "6.3",
+        url: "https://archive-video-proxy.davidmonrroy7.workers.dev/shrek-para-siempre-2010",
+        title: "Shrek Para Siempre (2010) - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
     },
     
-    // El Chavo del 8 - Serie
+    // El Chavo del 8 Series
+    "tt0229889": {
+        id: "tt0229889",
+        type: "series",
+        name: "El Chavo del 8",
+        seriesId: "tt0229889",
+        seriesName: "El Chavo del 8",
+        genre: ["Comedia", "Familiar"],
+        year: 1971,
+        director: "Roberto Gómez Bolaños",
+        cast: ["Roberto Gómez Bolaños", "Ramón Valdés", "Carlos Villagrán", "María Antonieta de las Nieves"],
+        description: "Las aventuras de un niño huérfano que vive en una vecindad y sus travesuras con los demás habitantes del lugar.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        imdbRating: "8.5",
+        language: "Latino"
+    },
+    
     "tt0229889:1:1": {
         id: "tt0229889:1:1",
         type: "series",
-        name: "El Chavo del 8 - Episodio 1: Los Dulces Prohibidos",
+        name: "Los Dulces Prohibidos",
         genre: ["Comedia", "Familiar"],
         year: 1971,
         episode: 1,
         season: 1,
         seriesId: "tt0229889",
         seriesName: "El Chavo del 8",
-        description: "En este primer episodio, el Chavo se mete en problemas cuando encuentra unos dulces y no sabe de quién son. Como siempre, sus travesuras inocentes causan malentendidos divertidos en la vecindad del número 8.",
+        description: "En este primer episodio, el Chavo se mete en problemas cuando encuentra unos dulces y no sabe de quién son.",
         poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         runtime: "30 min",
         infoHash: "1956751B7227B131471EBDD41F9AA2536613A376",
-        magnetUri: "magnet:?xt=urn:btih:1956751B7227B131471EBDD41F9AA2536613A376&dn=The.avengers.2012.1080p-dual-lat.mp4&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.demonii.com%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2ftracker.torrent.eu.org%3a451%2fannounce&tr=udp%3a%2f%2fexplodie.org%3a6969%2fannounce",
+        magnetUri: "magnet:?xt=urn:btih:1956751B7227B131471EBDD41F9AA2536613A376&dn=The.avengers.2012.1080p-dual-lat.mp4&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
         sources: ["dht:1956751B7227B131471EBDD41F9AA2536613A376"],
-        title: "Episodio 1 - 1080p Latino"
+        title: "Episodio 1 - Los Dulces Prohibidos - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
     },
     
     "tt0229889:1:2": {
         id: "tt0229889:1:2",
         type: "series", 
-        name: "El Chavo del 8 - Episodio 2: El Cumpleaños de la Chilindrina",
+        name: "El Cumpleaños de la Chilindrina",
         genre: ["Comedia", "Familiar"],
         year: 1971,
         episode: 2,
         season: 1,
         seriesId: "tt0229889",
         seriesName: "El Chavo del 8",
-        description: "Es el cumpleaños de la Chilindrina y todos los niños de la vecindad están invitados a la fiesta, excepto el Chavo. Don Ramón trata de explicarle a su hija por qué no puede invitar al Chavo, pero las cosas se complican cuando aparece la Bruja del 71.",
+        description: "Es el cumpleaños de la Chilindrina y todos los niños de la vecindad están invitados a la fiesta, excepto el Chavo.",
         poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         runtime: "30 min",
         url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-        title: "Episodio 2 - Latino"
+        title: "Episodio 2 - El Cumpleaños de la Chilindrina - Latino",
+        quality: "720p",
+        language: "Latino"
     },
     
     "tt0229889:1:3": {
         id: "tt0229889:1:3",
         type: "series", 
-        name: "El Chavo del 8 - Episodio 3: El Juego de Béisbol",
+        name: "El Juego de Béisbol",
         genre: ["Comedia", "Familiar"],
         year: 1971,
         episode: 3,
         season: 1,
         seriesId: "tt0229889",
         seriesName: "El Chavo del 8",
-        description: "Los niños de la vecindad deciden jugar béisbol en el patio. El Chavo, como siempre, quiere participar pero no sabe muy bien las reglas del juego. Sus intentos por ayudar resultan en situaciones cómicas que involucran a todos los vecinos, especialmente al Señor Barriga.",
+        description: "Los niños de la vecindad deciden jugar béisbol en el patio. El Chavo, como siempre, quiere participar pero no sabe muy bien las reglas del juego.",
         poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
         runtime: "30 min",
         url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-        title: "Episodio 3 - Latino"
+        title: "Episodio 3 - El Juego de Béisbol - Latino",
+        quality: "720p",
+        language: "Latino"
     }
 };
 
-// Función para generar metadatos del catálogo
+// Enhanced utility functions
 const generateMetaPreview = function(value, key) {
     const baseId = key.split(":")[0];
     return {
@@ -199,15 +233,16 @@ const generateMetaPreview = function(value, key) {
         posterShape: "poster",
         background: value.background,
         logo: value.logo,
-        description: value.description
+        description: value.description,
+        imdbRating: value.imdbRating,
+        language: value.language
     };
 };
 
-// Función para generar metadatos completos
 const generateMeta = function(value, key) {
     const meta = generateMetaPreview(value, key);
     
-    // Agregar información adicional para meta completa
+    // Add detailed metadata
     meta.director = value.director;
     meta.cast = value.cast;
     meta.runtime = value.runtime;
@@ -216,13 +251,22 @@ const generateMeta = function(value, key) {
     meta.awards = "Varios premios internacionales";
     meta.website = "https://github.com/tu-usuario/stremio-addon-latino";
     
-    // Para series, agregar información de videos
+    // Enhanced series metadata
     if (value.type === "series") {
         const seriesEpisodes = Object.entries(dataset)
-            .filter(([k, v]) => v.seriesId === value.seriesId)
+            .filter(([k, v]) => v.seriesId === value.seriesId && k.includes(":"))
+            .sort((a, b) => {
+                const aSeason = parseInt(a[0].split(":")[1]);
+                const aEpisode = parseInt(a[0].split(":")[2]);
+                const bSeason = parseInt(b[0].split(":")[1]);
+                const bEpisode = parseInt(b[0].split(":")[2]);
+                
+                if (aSeason !== bSeason) return aSeason - bSeason;
+                return aEpisode - bEpisode;
+            })
             .map(([k, v]) => ({
                 id: k,
-                title: v.name,
+                title: `S${v.season}E${v.episode} - ${v.name}`,
                 season: v.season,
                 episode: v.episode,
                 overview: v.description,
@@ -236,78 +280,88 @@ const generateMeta = function(value, key) {
     return meta;
 };
 
-// Crear el builder del addon
+// Enhanced stream quality detection
+const getStreamQuality = (item) => {
+    if (item.quality) return item.quality;
+    if (item.url && item.url.includes('1080p')) return '1080p';
+    if (item.url && item.url.includes('720p')) return '720p';
+    return 'SD';
+};
+
+// Create addon builder
 const builder = new addonBuilder(manifest);
 
-// Manejador de streams
+// Enhanced stream handler with better error handling
 builder.defineStreamHandler(function(args) {
-    console.log("Solicitud de stream para:", args.id);
+    console.log("🎬 Solicitud de stream para:", args.id);
     
     if (dataset[args.id]) {
         const item = dataset[args.id];
+        const quality = getStreamQuality(item);
         
-        // Configuración base del stream
         const stream = {
-            title: item.title || "Stream Latino",
+            title: `${item.title || item.name} - ${quality} Latino`,
             url: item.url,
             infoHash: item.infoHash,
             sources: item.sources
         };
         
-        // Configuraciones especiales para diferentes tipos de streams
-        if (item.url && (item.url.includes('pixeldrain.com') || item.url.includes('gofile.io') || item.url.includes('workers.dev'))) {
+        // Enhanced stream configuration
+        if (item.url) {
             stream.behaviorHints = {
                 notWebReady: false,
-                bingeGroup: item.id
+                bingeGroup: item.seriesId || item.id,
+                countryWhitelist: ['MX', 'AR', 'CO', 'VE', 'PE', 'CL', 'EC', 'UY', 'PY', 'BO']
             };
             
-            // Headers adicionales
             stream.httpHeaders = {
-                'User-Agent': 'Stremio/4.4.0',
+                'User-Agent': 'Stremio/4.4.0 (https://stremio.com)',
                 'Accept': '*/*',
                 'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
                 'Referer': 'https://stremio.com/',
                 'Origin': 'https://stremio.com'
             };
-            
-            console.log("Stream directo configurado con headers");
         }
         
-        // Si hay un magnet URI, agregarlo como información adicional
-        if (item.magnetUri) {
-            console.log("Magnet URI disponible:", item.magnetUri);
+        // Torrent stream configuration
+        if (item.infoHash) {
+            stream.title += " (Torrent)";
+            stream.behaviorHints.p2p = true;
         }
         
-        // Limpiar propiedades undefined
+        // Clean undefined properties
         Object.keys(stream).forEach(key => {
             if (stream[key] === undefined) {
                 delete stream[key];
             }
         });
         
-        console.log("Stream encontrado:", stream);
+        console.log("✅ Stream encontrado:", stream.title);
         return Promise.resolve({ streams: [stream] });
     } else {
-        console.log("No se encontró stream para:", args.id);
+        console.log("❌ No se encontró stream para:", args.id);
         return Promise.resolve({ streams: [] });
     }
 });
 
-// Manejador de catálogos
+// Enhanced catalog handler with pagination
 builder.defineCatalogHandler(function(args) {
-    console.log("Solicitud de catálogo:", args);
+    console.log("📚 Solicitud de catálogo:", args);
     
-    const metas = Object.entries(dataset)
+    const skip = parseInt(args.extra?.skip) || 0;
+    const limit = 20; // Items per page
+    
+    let filteredItems = Object.entries(dataset)
         .filter(([key, value]) => {
-            // Filtrar por tipo
+            // Filter by type
             if (value.type !== args.type) return false;
             
-            // Para series, solo mostrar un meta por serie (no por episodio) 
-            if (value.type === "series" && key !== value.seriesId + ":1:1") {
+            // For series, only show main series entry (not individual episodes)
+            if (value.type === "series" && key.includes(":")) {
                 return false;
             }
             
-            // Filtrar por género si se especifica
+            // Genre filtering
             if (args.extra && args.extra.genre) {
                 return value.genre && value.genre.some(g => 
                     g.toLowerCase().includes(args.extra.genre.toLowerCase()) ||
@@ -316,22 +370,27 @@ builder.defineCatalogHandler(function(args) {
             }
             
             return true;
-        })
+        });
+    
+    // Apply pagination
+    const paginatedItems = filteredItems
+        .slice(skip, skip + limit)
         .map(([key, value]) => generateMetaPreview(value, key));
     
-    console.log("Metas encontradas en catálogo:", metas.length);
-    console.log("Películas en catálogo:", metas.filter(m => m.type === 'movie').map(m => m.name));
-    return Promise.resolve({ metas: metas });
+    console.log(`📄 Página ${Math.floor(skip/limit) + 1}: ${paginatedItems.length} items`);
+    console.log("🎭 Contenido:", paginatedItems.map(m => `${m.name} (${m.year})`));
+    
+    return Promise.resolve({ metas: paginatedItems });
 });
 
-// Manejador de metadatos
+// Enhanced meta handler
 builder.defineMetaHandler(function(args) {
-    console.log("Solicitud de metadatos para:", args.id);
+    console.log("📝 Solicitud de metadatos para:", args.id);
     
-    // Buscar el item por ID exacto primero
+    // Find by exact ID first
     let item = Object.entries(dataset).find(([key, value]) => key === args.id);
     
-    // Si no se encuentra, buscar por ID base o seriesId
+    // If not found, search by base ID or series ID
     if (!item) {
         item = Object.entries(dataset).find(([key, value]) => {
             const baseId = key.split(":")[0];
@@ -342,30 +401,62 @@ builder.defineMetaHandler(function(args) {
     if (item) {
         const [key, value] = item;
         const meta = generateMeta(value, key);
-        console.log("Metadatos encontrados:", meta.name);
+        console.log("✅ Metadatos encontrados:", meta.name);
         return Promise.resolve({ meta: meta }); 
     } else {
-        console.log("No se encontraron metadatos para:", args.id);
+        console.log("❌ No se encontraron metadatos para:", args.id);
         return Promise.resolve({ meta: null });
     }
 });
 
-// Configurar el servidor
+// Create addon interface
 const addonInterface = builder.getInterface();
 
-// Iniciar servidor
+// Enhanced server startup
 const port = process.env.PORT || 3000;
+const host = process.env.HOST || 'localhost';
+
 serveHTTP(addonInterface, { port: port }).then(() => {
-    console.log(`✅ Servidor de addon Stremio ejecutándose en puerto ${port}`);
-    console.log(`🌐 URL del Addon: http://localhost:${port}/manifest.json`);
-    console.log(`📱 Instalar en Stremio: http://localhost:${port}/manifest.json`);
-    console.log(`\n🎬 Películas configuradas en Español Latino:`);
-    console.log(`   - Shrek (2001): ${dataset.latino_pelicula_1.url}`);
-    console.log(`   - Shrek 2 (2004): ${dataset.latino_pelicula_2.url}`);
-    console.log(`   - Shrek Tercero (2007): ${dataset.latino_pelicula_3.url}`);
-    console.log(`   - Shrek Para Siempre (2010): ${dataset.latino_pelicula_4.url}`);
-    console.log(`📺 El Chavo del 8 - 3 episodios disponibles en Latino`);
+    console.log(`\n🚀 ═══════════════════════════════════════════════════════`);
+    console.log(`   STREMIO ADDON LATINO - SERVIDOR INICIADO`);
+    console.log(`🚀 ═══════════════════════════════════════════════════════`);
+    console.log(`🌐 URL del Servidor: http://${host}:${port}`);
+    console.log(`📱 Manifest URL: http://${host}:${port}/manifest.json`);
+    console.log(`🔗 Instalar en Stremio: http://${host}:${port}/manifest.json`);
+    
+    console.log(`\n🎬 PELÍCULAS DISPONIBLES (${Object.values(dataset).filter(v => v.type === 'movie').length}):`);
+    Object.values(dataset)
+        .filter(v => v.type === 'movie')
+        .forEach(movie => {
+            console.log(`   📽️  ${movie.name} (${movie.year}) - ${getStreamQuality(movie)}`);
+        });
+    
+    console.log(`\n📺 SERIES DISPONIBLES:`);
+    const series = Object.values(dataset).filter(v => v.type === 'series' && !v.id.includes(':'));
+    series.forEach(show => {
+        const episodeCount = Object.values(dataset).filter(v => v.seriesId === show.id).length;
+        console.log(`   📺 ${show.name} - ${episodeCount} episodios`);
+    });
+    
+    console.log(`\n💡 INSTRUCCIONES:`);
+    console.log(`   1. Copia la URL del manifest: http://${host}:${port}/manifest.json`);
+    console.log(`   2. Abre Stremio y ve a Addons`);
+    console.log(`   3. Pega la URL en "Addon Repository URL"`);
+    console.log(`   4. ¡Disfruta del contenido en español latino!`);
+    console.log(`\n🔥 ═══════════════════════════════════════════════════════\n`);
+    
 }).catch(err => {
     console.error("❌ Error al iniciar el servidor:", err);
     process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+    console.log('\n👋 Cerrando servidor gracefully...');
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n👋 Cerrando servidor gracefully...');
+    process.exit(0);
 });
