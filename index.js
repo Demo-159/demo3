@@ -81,10 +81,9 @@ const dataset = {
         background: "https://peach.blender.org/wp-content/uploads/bbb-splash.png",
         logo: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
         runtime: "10 min",
-        // Intentar con pCloud (puede no funcionar)
-        url: "https://u.pcloud.link/publink/show?code=XZCq0u5ZX2QSgoUbouQrcpBLLOA6ch2Rr3FX",
-        // Backup con stream HTTP directo que sí funciona
-        backupUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        // Stream M3U8 (HLS) - Compatible con Stremio
+        url: "https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/main.m3u8",
+        title: "HLS Stream"
     },
     
     "tt0371746": {
@@ -223,40 +222,27 @@ builder.defineStreamHandler(function(args) {
     
     if (dataset[args.id]) {
         const item = dataset[args.id];
-        const streams = [];
-        
-        // Stream principal
-        const mainStream = {
+        const stream = {
             title: item.title || "Demo Stream",
             url: item.url,
             infoHash: item.infoHash,
             sources: item.sources
         };
         
-        // Limpiar propiedades undefined
-        Object.keys(mainStream).forEach(key => {
-            if (mainStream[key] === undefined) {
-                delete mainStream[key];
-            }
-        });
-        
-        streams.push(mainStream);
-        
-        // Si hay URL de backup, agregarla como stream adicional
-        if (item.backupUrl) {
-            streams.push({
-                title: "Backup Stream",
-                url: item.backupUrl
-            });
-        }
-        
         // Si hay un magnet URI, agregarlo como información adicional
         if (item.magnetUri) {
             console.log("Magnet URI available:", item.magnetUri);
         }
         
-        console.log("Streams found:", streams.length);
-        return Promise.resolve({ streams: streams });
+        // Limpiar propiedades undefined
+        Object.keys(stream).forEach(key => {
+            if (stream[key] === undefined) {
+                delete stream[key];
+            }
+        });
+        
+        console.log("Stream found:", stream);
+        return Promise.resolve({ streams: [stream] });
     } else {
         console.log("No stream found for:", args.id);
         return Promise.resolve({ streams: [] });
