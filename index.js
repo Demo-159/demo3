@@ -40,7 +40,7 @@ const manifest = {
             extra: [
                 {
                     name: "genre",
-                    options: ["Action", "Comedy", "Drama", "Sci-Fi"]
+                    options: ["Comedia", "Animación", "Aventura", "Familiar", "Terror"]
                 }
             ]
         }
@@ -64,7 +64,7 @@ const dataset = {
         id: "demo_movie_1",
         type: "movie",
         name: "Shrek",
-        genre: ["Comedy", "Animation", "Adventure", "Family"],
+        genre: ["Comedia", "Animación", "Aventura", "Familiar"],
         year: 2001,
         director: "Andrew Adamson, Vicky Jenson",
         cast: ["Mike Myers", "Eddie Murphy", "Cameron Diaz", "John Lithgow"],
@@ -82,7 +82,7 @@ const dataset = {
         id: "demo_movie_2", 
         type: "movie",
         name: "Shrek 2",
-        genre: ["Comedy", "Animation", "Adventure", "Family"],
+        genre: ["Comedia", "Animación", "Aventura", "Familiar"],
         year: 2004,
         director: "Andrew Adamson, Kelly Asbury, Conrad Vernon",
         cast: ["Mike Myers", "Eddie Murphy", "Cameron Diaz", "Julie Andrews"],
@@ -95,6 +95,22 @@ const dataset = {
         url: "https://store-na-phx-1.gofile.io/download/web/37817e78-be2e-49b9-b5b4-90339fbde307/Shrek.2001.1080p-dual-lat.mp4",
         title: "Shrek 2 (2004)"
     },
+"tt0892791": {
+    id: "tt0892791",
+    type: "movie",
+    name: "Shrek Para Siempre",
+    genre: ["Comedia", "Animación", "Aventura", "Familiar"],
+    year: 2010,
+    director: "Mike Mitchell",
+    cast: ["Mike Myers", "Cameron Diaz", "Eddie Murphy", "Antonio Banderas"],
+    description: "Rumpelstiltskin engaña a Shrek, quien atraviesa una crisis de la mediana edad, para que desee nunca haber nacido. Así, Shrek queda atrapado en una realidad alterna donde Rumpel gobierna con puño de hierro y nadie lo recuerda.",
+    poster: "https://m.media-amazon.com/images/M/MV5BNjA0MjYyOTU3MF5BMl5BanBnXkFtZTcwMTg1MjY0Mw@@._V1_SX300.jpg",
+    background: "https://images.justwatch.com/backdrop/10890619/s1920/shrek-forever-after",
+    logo: "https://seeklogo.com/images/S/shrek-forever-after-logo-689A537D1C-seeklogo.com.png",
+    runtime: "93 min",
+    url: "https://archive-video-proxy.davidmonrroy7.workers.dev/",
+    title: "Shrek Para Siempre (2010)"
+}
     
     // El Chavo del 8 - Episodio 1 con tu magnet link
     "tt0229889:1:1": {
