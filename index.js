@@ -226,7 +226,7 @@ builder.defineStreamHandler(function(args) {
                 // Opción 1: Stream HLS original con configuración mejorada
                 {
                     title: "🎬 HLS Original (Gumlet)",
-                    url: "https://video.gumlet.io/684cd82890b0148cd24b3fab/684cdcc9c4269590ab78ef00/main.m3u8",
+                    url: "https://pixeldrain.com/api/file/uVTP2kza",
                     behaviorHints: {
                         notWebReady: false,
                         bingeGroup: "big-buck-bunny-hls"
