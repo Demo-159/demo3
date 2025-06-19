@@ -30,7 +30,7 @@ const manifest = {
         "configurationRequired": false
     }
 };
-
+// El ID debe ser el ID de imdb de la pelicula o serie
 const dataset = {
     "tt0126029": {
         id: "tt0126029",
@@ -169,12 +169,10 @@ const dataset = {
     }
 };
 
-// Utilidades
 const extractBaseId = (key) => key.split(":")[0];
 const isEpisode = (key) => key.includes(":");
 const getQuality = (item) => item.quality || (item.url?.includes('1080p') ? '1080p' : item.url?.includes('720p') ? '720p' : 'SD');
 
-// Generadores de metadata
 const createMetaPreview = (item, key) => ({
     id: extractBaseId(key),
     type: item.type,
@@ -226,12 +224,10 @@ const createStream = (item) => {
         title: `${item.name} - ${getQuality(item)} Latino`
     };
     
-    // Agregar fuente de video
     if (item.url) stream.url = item.url;
     if (item.infoHash) stream.infoHash = item.infoHash;
     if (item.sources) stream.sources = item.sources;
     
-    // Configurar comportamiento
     if (item.url) {
         stream.behaviorHints = {
             notWebReady: false,
@@ -254,7 +250,6 @@ const createStream = (item) => {
     return stream;
 };
 
-// Builders del addon
 const builder = new addonBuilder(manifest);
 
 builder.defineStreamHandler(({ id }) => {
@@ -301,7 +296,6 @@ builder.defineMetaHandler(({ id }) => {
     });
 });
 
-// Servidor
 const port = process.env.PORT || 3000;
 
 serveHTTP(builder.getInterface(), { port })
@@ -313,7 +307,6 @@ serveHTTP(builder.getInterface(), { port })
     })
     .catch(console.error);
 
-// Manejo de señales
 ['SIGINT', 'SIGTERM'].forEach(signal => {
     process.on(signal, () => process.exit(0));
 });
