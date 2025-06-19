@@ -1,9 +1,7 @@
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 const magnet = require("magnet-uri");
-const express = require("express");
-const path = require("path");
-const fs = require("fs").promises;
 
+// Enhanced addon configuration
 const manifest = {
     "id": "org.demo.stremio-addon-latino",
     "version": "1.0.1",
@@ -11,10 +9,10 @@ const manifest = {
     "description": "Addon de demostración con películas y series en español latino - Contenido familiar y entretenimiento",
     "icon": "https://via.placeholder.com/256x256/FF6B6B/FFFFFF?text=LATINO",
     "background": "https://via.placeholder.com/1920x1080/4ECDC4/FFFFFF?text=ADDON+LATINO",
-
+    
     "resources": ["catalog", "stream", "meta"],
     "types": ["movie", "series"],
-
+    
     "catalogs": [
         {
             type: "movie",
@@ -47,9 +45,9 @@ const manifest = {
             ]
         }
     ],
-
+    
     "idPrefixes": ["latino_", "tt"],
-
+    
     "behaviorHints": {
         "adult": false,
         "p2p": true,
@@ -58,9 +56,9 @@ const manifest = {
     }
 };
 
-// Dataset inicial (se cargará desde archivo JSON si existe)
-let dataset = {
-    // Movies with IMDB IDs
+// Enhanced dataset with better organization
+const dataset = {
+    // Shrek Movies Collection with IMDB IDs
     "tt0126029": {
         id: "tt0126029",
         type: "movie",
@@ -80,7 +78,7 @@ let dataset = {
         quality: "1080p",
         language: "Latino"
     },
-
+    
     "tt0298148": {
         id: "tt0298148", 
         type: "movie",
@@ -99,45 +97,128 @@ let dataset = {
         title: "Shrek 2 (2004) - 1080p Latino",
         quality: "1080p",
         language: "Latino"
+    },
+
+    "tt0413267": {
+        id: "tt0413267",
+        type: "movie",
+        name: "Shrek Tercero",
+        genre: ["Comedia", "Animación", "Aventura", "Familiar"],
+        year: 2007,
+        director: "Chris Miller, Raman Hui",
+        cast: ["Mike Myers", "Cameron Díaz", "Eddie Murphy", "Antonio Banderas"],
+        description: "Cuando el Rey Harold de Muy Muy Lejano se encuentra en su lecho de muerte, Shrek debe encontrar a un heredero para el trono o se convertirá en el nuevo rey.",
+        poster: "https://m.media-amazon.com/images/M/MV5BOTgyMjc3ODk2MV5BMl5BanBnXkFtZTcwMjY0MjEzMw@@._V1_FMjpg_UX1000_.jpg",
+        background: "https://images.justwatch.com/backdrop/178788939/s1920/shrek-the-third.jpg",
+        logo: "https://seeklogo.com/images/S/shrek-the-third-logo-6B8B8B5F5E-seeklogo.com.png",
+        runtime: "93 min",
+        imdbRating: "6.1",
+        url: "https://cdn-0f49rzor22huapc5.orbitcache.com/engine/hls2/01/14644/vfljg1suakn9_,n,.urlset/master.m3u8?t=ZNhCNOufCq_BKoJG1Q91_Nj_ZCCRvdwQsQU9Uti8axI&s=1750296087&e=14400&f=73222427&node=SZHSsRvkCzi+vj394EwIn1FNSsrLyGHN5gEj3UffCak=&i=0.1&sp=2500&asn=27901&q=n&rq=bdWrKTGTzuSGnyAY43XlyDRy9j9BCgHI7PooRiw1",
+        title: "Shrek Tercero (2007) - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
+    },
+
+    "tt0892791": {
+        id: "tt0892791",
+        type: "movie",
+        name: "Shrek Para Siempre",
+        genre: ["Comedia", "Animación", "Aventura", "Familiar"],
+        year: 2010,
+        director: "Mike Mitchell",
+        cast: ["Mike Myers", "Cameron Díaz", "Eddie Murphy", "Antonio Banderas"],
+        description: "Shrek está pasando por una crisis de la mediana edad. Ya no se siente como un verdadero ogro aterrador, sino como un padre de familia domesticado.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzBlODkyNGYtYzBmNC00MGJjLThmOGUtNjUzZDc4YzBjYzVkXkEyXkFqcGc@._V1_.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BMTI4MDQ2NjY4OV5BMl5BanBnXkFtZTcwNjQxMDUzMw@@._V1_.jpg",
+        logo: "https://seeklogo.com/images/S/shrek-forever-after-logo-689A537D1C-seeklogo.com.png",
+        runtime: "93 min",
+        imdbRating: "6.3",
+        url: "https://archive-video-proxy.davidmonrroy7.workers.dev/shrek-para-siempre-2010",
+        title: "Shrek Para Siempre (2010) - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
+    },
+    
+    // El Chavo del 8 Series
+    "tt0229889": {
+        id: "tt0229889",
+        type: "series",
+        name: "El Chavo del 8",
+        seriesId: "tt0229889",
+        seriesName: "El Chavo del 8",
+        genre: ["Comedia", "Familiar"],
+        year: 1971,
+        director: "Roberto Gómez Bolaños",
+        cast: ["Roberto Gómez Bolaños", "Ramón Valdés", "Carlos Villagrán", "María Antonieta de las Nieves"],
+        description: "Las aventuras de un niño huérfano que vive en una vecindad y sus travesuras con los demás habitantes del lugar.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        imdbRating: "8.5",
+        language: "Latino"
+    },
+    
+    "tt0229889:1:1": {
+        id: "tt0229889:1:1",
+        type: "series",
+        name: "Los Dulces Prohibidos",
+        genre: ["Comedia", "Familiar"],
+        year: 1971,
+        episode: 1,
+        season: 1,
+        seriesId: "tt0229889",
+        seriesName: "El Chavo del 8",
+        description: "En este primer episodio, el Chavo se mete en problemas cuando encuentra unos dulces y no sabe de quién son.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        runtime: "30 min",
+        infoHash: "1956751B7227B131471EBDD41F9AA2536613A376",
+        magnetUri: "magnet:?xt=urn:btih:1956751B7227B131471EBDD41F9AA2536613A376&dn=The.avengers.2012.1080p-dual-lat.mp4&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce",
+        sources: ["dht:1956751B7227B131471EBDD41F9AA2536613A376"],
+        title: "Episodio 1 - Los Dulces Prohibidos - 1080p Latino",
+        quality: "1080p",
+        language: "Latino"
+    },
+    
+    "tt0229889:1:2": {
+        id: "tt0229889:1:2",
+        type: "series", 
+        name: "El Cumpleaños de la Chilindrina",
+        genre: ["Comedia", "Familiar"],
+        year: 1971,
+        episode: 2,
+        season: 1,
+        seriesId: "tt0229889",
+        seriesName: "El Chavo del 8",
+        description: "Es el cumpleaños de la Chilindrina y todos los niños de la vecindad están invitados a la fiesta, excepto el Chavo.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        runtime: "30 min",
+        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        title: "Episodio 2 - El Cumpleaños de la Chilindrina - Latino",
+        quality: "720p",
+        language: "Latino"
+    },
+    
+    "tt0229889:1:3": {
+        id: "tt0229889:1:3",
+        type: "series", 
+        name: "El Juego de Béisbol",
+        genre: ["Comedia", "Familiar"],
+        year: 1971,
+        episode: 3,
+        season: 1,
+        seriesId: "tt0229889",
+        seriesName: "El Chavo del 8",
+        description: "Los niños de la vecindad deciden jugar béisbol en el patio. El Chavo, como siempre, quiere participar pero no sabe muy bien las reglas del juego.",
+        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        background: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        runtime: "30 min",
+        url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        title: "Episodio 3 - El Juego de Béisbol - Latino",
+        quality: "720p",
+        language: "Latino"
     }
 };
-
-// Funciones de persistencia
-const DATA_FILE = 'addon_data.json';
-
-async function loadDataset() {
-    try {
-        const data = await fs.readFile(DATA_FILE, 'utf8');
-        const parsed = JSON.parse(data);
-        dataset = { ...dataset, ...parsed };
-        console.log('✅ Dataset cargado desde archivo');
-    } catch (error) {
-        console.log('ℹ️ Usando dataset por defecto');
-    }
-}
-
-async function saveDataset() {
-    try {
-        await fs.writeFile(DATA_FILE, JSON.stringify(dataset, null, 2));
-        console.log('✅ Dataset guardado');
-    } catch (error) {
-        console.error('❌ Error guardando dataset:', error);
-    }
-}
-
-// Función para generar ID único
-function generateId(type, name, year) {
-    const base = `latino_${type}_${name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${year}`;
-    let counter = 0;
-    let id = base;
-    
-    while (dataset[id]) {
-        counter++;
-        id = `${base}_${counter}`;
-    }
-    
-    return id;
-}
 
 // Enhanced utility functions
 const generateMetaPreview = function(value, key) {
@@ -160,7 +241,7 @@ const generateMetaPreview = function(value, key) {
 
 const generateMeta = function(value, key) {
     const meta = generateMetaPreview(value, key);
-
+    
     // Add detailed metadata
     meta.director = value.director;
     meta.cast = value.cast;
@@ -169,7 +250,7 @@ const generateMeta = function(value, key) {
     meta.language = "Español Latino";
     meta.awards = "Varios premios internacionales";
     meta.website = "https://github.com/tu-usuario/stremio-addon-latino";
-
+    
     // Enhanced series metadata
     if (value.type === "series") {
         const seriesEpisodes = Object.entries(dataset)
@@ -179,7 +260,7 @@ const generateMeta = function(value, key) {
                 const aEpisode = parseInt(a[0].split(":")[2]);
                 const bSeason = parseInt(b[0].split(":")[1]);
                 const bEpisode = parseInt(b[0].split(":")[2]);
-
+                
                 if (aSeason !== bSeason) return aSeason - bSeason;
                 return aEpisode - bEpisode;
             })
@@ -192,10 +273,10 @@ const generateMeta = function(value, key) {
                 released: new Date(v.year, 0, 1).toISOString(),
                 thumbnail: v.poster
             }));
-
+        
         meta.videos = seriesEpisodes;
     }
-
+    
     return meta;
 };
 
@@ -213,18 +294,18 @@ const builder = new addonBuilder(manifest);
 // Enhanced stream handler with better error handling
 builder.defineStreamHandler(function(args) {
     console.log("🎬 Solicitud de stream para:", args.id);
-
+    
     if (dataset[args.id]) {
         const item = dataset[args.id];
         const quality = getStreamQuality(item);
-
+        
         const stream = {
             title: `${item.title || item.name} - ${quality} Latino`,
             url: item.url,
             infoHash: item.infoHash,
             sources: item.sources
         };
-
+        
         // Enhanced stream configuration
         if (item.url) {
             stream.behaviorHints = {
@@ -232,7 +313,7 @@ builder.defineStreamHandler(function(args) {
                 bingeGroup: item.seriesId || item.id,
                 countryWhitelist: ['MX', 'AR', 'CO', 'VE', 'PE', 'CL', 'EC', 'UY', 'PY', 'BO']
             };
-
+            
             stream.httpHeaders = {
                 'User-Agent': 'Stremio/4.4.0 (https://stremio.com)',
                 'Accept': '*/*',
@@ -241,20 +322,20 @@ builder.defineStreamHandler(function(args) {
                 'Origin': 'https://stremio.com'
             };
         }
-
+        
         // Torrent stream configuration
         if (item.infoHash) {
             stream.title += " (Torrent)";
             stream.behaviorHints.p2p = true;
         }
-
+        
         // Clean undefined properties
         Object.keys(stream).forEach(key => {
             if (stream[key] === undefined) {
                 delete stream[key];
             }
         });
-
+        
         console.log("✅ Stream encontrado:", stream.title);
         return Promise.resolve({ streams: [stream] });
     } else {
@@ -266,20 +347,20 @@ builder.defineStreamHandler(function(args) {
 // Enhanced catalog handler with pagination
 builder.defineCatalogHandler(function(args) {
     console.log("📚 Solicitud de catálogo:", args);
-
+    
     const skip = parseInt(args.extra?.skip) || 0;
     const limit = 20; // Items per page
-
+    
     let filteredItems = Object.entries(dataset)
         .filter(([key, value]) => {
             // Filter by type
             if (value.type !== args.type) return false;
-
+            
             // For series, only show main series entry (not individual episodes)
             if (value.type === "series" && key.includes(":")) {
                 return false;
             }
-
+            
             // Genre filtering
             if (args.extra && args.extra.genre) {
                 return value.genre && value.genre.some(g => 
@@ -287,28 +368,28 @@ builder.defineCatalogHandler(function(args) {
                     args.extra.genre.toLowerCase().includes(g.toLowerCase())
                 );
             }
-
+            
             return true;
         });
-
+    
     // Apply pagination
     const paginatedItems = filteredItems
         .slice(skip, skip + limit)
         .map(([key, value]) => generateMetaPreview(value, key));
-
+    
     console.log(`📄 Página ${Math.floor(skip/limit) + 1}: ${paginatedItems.length} items`);
     console.log("🎭 Contenido:", paginatedItems.map(m => `${m.name} (${m.year})`));
-
+    
     return Promise.resolve({ metas: paginatedItems });
 });
 
 // Enhanced meta handler
 builder.defineMetaHandler(function(args) {
     console.log("📝 Solicitud de metadatos para:", args.id);
-
+    
     // Find by exact ID first
     let item = Object.entries(dataset).find(([key, value]) => key === args.id);
-
+    
     // If not found, search by base ID or series ID
     if (!item) {
         item = Object.entries(dataset).find(([key, value]) => {
@@ -316,7 +397,7 @@ builder.defineMetaHandler(function(args) {
             return baseId === args.id || value.seriesId === args.id;
         });
     }
-
+    
     if (item) {
         const [key, value] = item;
         const meta = generateMeta(value, key);
@@ -328,497 +409,54 @@ builder.defineMetaHandler(function(args) {
     }
 });
 
-// Create Express app for admin panel
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+// Create addon interface
+const addonInterface = builder.getInterface();
 
-// Admin panel HTML
-const adminHTML = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Stremio Addon Latino</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            color: #666;
-        }
-        
-        .tab:hover {
-            background: #e9ecef;
-        }
-        
-        .tab.active {
-            background: white;
-            color: #667eea;
-            border-bottom: 3px solid #667eea;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 30px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-        }
-        
-        .content-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .content-item {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
-        
-        .content-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        
-        .content-item h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .content-item p {
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        
-        .content-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .content-type {
-            background: #667eea;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .content-year {
-            color: #999;
-            font-weight: 600;
-        }
-        
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: 700;
-            display: block;
-        }
-        
-        .stat-label {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .genre-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        
-        .genre-tag {
-            background: #e9ecef;
-            color: #666;
-            padding: 3px 8px;
-            border-radius: 15px;
-            font-size: 12px;
-        }
-        
-        @media (max-width: 768px) {
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .content-list {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🎬 Panel de Administración</h1>
-            <p>Gestiona tu contenido de Stremio Addon Latino</p>
-        </div>
-        
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('add')">➕ Agregar Contenido</div>
-            <div class="tab" onclick="showTab('list')">📋 Lista de Contenido</div>
-            <div class="tab" onclick="showTab('stats')">📊 Estadísticas</div>
-        </div>
-        
-        <div id="add-tab" class="tab-content active">
-            <div id="alert-container"></div>
-            
-            <form id="content-form">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="type">Tipo de Contenido</label>
-                        <select id="type" name="type" required onchange="toggleSeriesFields()">
-                            <option value="">Seleccionar tipo</option>
-                            <option value="movie">Película</option>
-                            <option value="series">Serie</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="name">Nombre</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="year">Año</label>
-                        <input type="number" id="year" name="year" min="1900" max="2030" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="imdbId">ID de IMDB (opcional)</label>
-                        <input type="text" id="imdbId" name="imdbId" placeholder="tt1234567">
-                    </div>
-                </div>
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="director">Director</label>
-                        <input type="text" id="director" name="director">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="cast">Reparto (separado por comas)</label>
-                        <input type="text" id="cast" name="cast" placeholder="Actor 1, Actor 2, Actor 3">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="runtime">Duración</label>
-                        <input type="text" id="runtime" name="runtime" placeholder="120 min">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="imdbRating">Calificación IMDB</label>
-                        <input type="number" id="imdbRating" name="imdbRating" step="0.1" min="0" max="10">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">Descripción</label>
-                    <textarea id="description" name="description" required></textarea>
-                </div>
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="genre">Géneros (mantén Ctrl para seleccionar varios)</label>
-                        <select id="genre" name="genre" multiple required>
-                            <option value="Acción">Acción</option>
-                            <option value="Comedia">Comedia</option>
-                            <option value="Drama">Drama</option>
-                            <option value="Terror">Terror</option>
-                            <option value="Ciencia Ficción">Ciencia Ficción</option>
-                            <option value="Animación">Animación</option>
-                            <option value="Aventura">Aventura</option>
-                            <option value="Familiar">Familiar</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="quality">Calidad</label>
-                        <select id="quality" name="quality">
-                            <option value="SD">SD</option>
-                            <option value="720p">720p</option>
-                            <option value="1080p">1080p</option>
-                            <option value="4K">4K</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="poster">URL del Póster</label>
-                        <input type="url" id="poster" name="poster">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="background">URL del Fondo</label>
-                        <input type="url" id="background" name="background">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="url">URL del Video o Magnet URI</label>
-                    <input type="text" id="url" name="url" required placeholder="https://... o magnet:?xt=...">
-                </div>
-                
-                <button type="submit" class="btn">🚀 Agregar Contenido</button>
-            </form>
-        </div>
-        
-        <div id="list-tab" class="tab-content">
-            <div id="content-list" class="content-list">
-                <!-- El contenido se carga dinámicamente -->
-            </div>
-        </div>
-        
-        <div id="stats-tab" class="tab-content">
-            <div id="stats-container" class="stats">
-                <!-- Las estadísticas se cargan dinámicamente -->
-            </div>
-        </div>
-    </div>
+// Enhanced server startup
+const port = process.env.PORT || 3000;
+const host = process.env.HOST || 'localhost';
+
+serveHTTP(addonInterface, { port: port }).then(() => {
+    console.log(`\n🚀 ═══════════════════════════════════════════════════════`);
+    console.log(`   STREMIO ADDON LATINO - SERVIDOR INICIADO`);
+    console.log(`🚀 ═══════════════════════════════════════════════════════`);
+    console.log(`🌐 URL del Servidor: http://${host}:${port}`);
+    console.log(`📱 Manifest URL: http://${host}:${port}/manifest.json`);
+    console.log(`🔗 Instalar en Stremio: http://${host}:${port}/manifest.json`);
     
-    <script>
-        function showTab(tabName) {
-            // Ocultar todas las pestañas
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Mostrar la pestaña seleccionada
-            document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
-            
-            if (tabName === 'list') {
-                loadContentList();
-            } else if (tabName === 'stats') {
-                loadStats();
-            }
-        }
-        
-        function showAlert(message, type = 'success') {
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = \`<div class="alert alert-\${type}">\${message}</div>\`;
-            setTimeout(() => {
-                alertContainer.innerHTML = '';
-            }, 5000);
-        }
-        
-        document.getElementById('content-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-            
-            // Procesar géneros múltiples
-            const selectedGenres = Array.from(document.getElementById('genre').selectedOptions)
-                .map(option => option.value);
-            data.genre = selectedGenres;
-            
-            // Procesar cast
-            if (data.cast) {
-                data.cast = data.cast.split(',').map(actor => actor.trim());
-            }
-            
-            try {
-                const response = await fetch('/admin/add-content', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showAlert('✅ Contenido agregado exitosamente', 'success');
-                    e.target.reset();
-                } else {
-                    showAlert('❌ Error: ' + result.message, 'error');
-                }
-            } catch (error) {
-                showAlert('❌ Error de conexión: ' + error.message, 'error');
-            }
+    console.log(`\n🎬 PELÍCULAS DISPONIBLES (${Object.values(dataset).filter(v => v.type === 'movie').length}):`);
+    Object.values(dataset)
+        .filter(v => v.type === 'movie')
+        .forEach(movie => {
+            console.log(`   📽️  ${movie.name} (${movie.year}) - ${getStreamQuality(movie)}`);
         });
-        
-        async function loadContentList() {
-            try {
-                const response = await fetch('/admin/content-list');
-                const data = await response.json();
-                
-                const contentList = document.getElementById('content-list');
-                contentList.innerHTML = '';
-                
-                data.content.forEach(item => {
-                    const contentItem = document.createElement('div');
-                    contentItem.className = 'content-item';
-                    contentItem.innerHTML = \`
-                        <div class="content-meta">
-                            <span class="content-type">\${item.type === 'movie' ? 'Película' : 'Serie'}</span>
-                            <span class="content-year">\${item.year}</span>
-                        </div>
-                        <h3>\${item.name}</h3>
-                        <p>\${item.description.substring(0, 100)}...</p>
-                        <div class="genre-tags">
-                            \${item.genre.map(g => \`<span class="genre-tag">\${g}</span>\`).join('')}
+    
+    console.log(`\n📺 SERIES DISPONIBLES:`);
+    const series = Object.values(dataset).filter(v => v.type === 'series' && !v.id.includes(':'));
+    series.forEach(show => {
+        const episodeCount = Object.values(dataset).filter(v => v.seriesId === show.id).length;
+        console.log(`   📺 ${show.name} - ${episodeCount} episodios`);
+    });
+    
+    console.log(`\n💡 INSTRUCCIONES:`);
+    console.log(`   1. Copia la URL del manifest: http://${host}:${port}/manifest.json`);
+    console.log(`   2. Abre Stremio y ve a Addons`);
+    console.log(`   3. Pega la URL en "Addon Repository URL"`);
+    console.log(`   4. ¡Disfruta del contenido en español latino!`);
+    console.log(`\n🔥 ═══════════════════════════════════════════════════════\n`);
+    
+}).catch(err => {
+    console.error("❌ Error al iniciar el servidor:", err);
+    process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+    console.log('\n👋 Cerrando servidor gracefully...');
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n👋 Cerrando servidor gracefully...');
+    process.exit(0);
+});
