@@ -196,7 +196,6 @@ const createFullMeta = (item, key) => {
         director: item.director,
         cast: item.cast,
         runtime: item.runtime,
-        country: "Estados Unidos",
         language: "Español Latino"
     });
     
