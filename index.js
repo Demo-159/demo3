@@ -172,34 +172,40 @@ const dataset = {
     }
 };
 
-const generateMetaPreview = (value, key) => {
-    const baseId = key.split(":")[0];
-    return {
-        id: baseId,
-        type: value.type,
-        name: value.seriesName || value.name,
-        genre: value.genre,
-        year: value.year,
-        poster: value.poster,
-        posterShape: "poster",
-        background: value.background,
-        description: value.description,
-        imdbRating: value.imdbRating,
-        language: value.language
-    };
-};
+// Utilidades
+const extractBaseId = (key) => key.split(":")[0];
+const isEpisode = (key) => key.includes(":");
+const getQuality = (item) => item.quality || (item.url?.includes('1080p') ? '1080p' : item.url?.includes('720p') ? '720p' : 'SD');
 
-const generateMeta = (value, key) => {
-    const meta = generateMetaPreview(value, key);
-    meta.director = value.director;
-    meta.cast = value.cast;
-    meta.runtime = value.runtime;
-    meta.country = "Estados Unidos";
-    meta.language = "Español Latino";
+// Generadores de metadata
+const createMetaPreview = (item, key) => ({
+    id: extractBaseId(key),
+    type: item.type,
+    name: item.seriesName || item.name,
+    genre: item.genre,
+    year: item.year,
+    poster: item.poster,
+    posterShape: "poster",
+    background: item.background,
+    description: item.description,
+    imdbRating: item.imdbRating,
+    language: item.language
+});
+
+const createFullMeta = (item, key) => {
+    const meta = createMetaPreview(item, key);
     
-    if (value.type === "series") {
-        const seriesEpisodes = Object.entries(dataset)
-            .filter(([k, v]) => v.seriesId === value.seriesId && k.includes(":"))
+    Object.assign(meta, {
+        director: item.director,
+        cast: item.cast,
+        runtime: item.runtime,
+        country: "Estados Unidos",
+        language: "Español Latino"
+    });
+    
+    if (item.type === "series") {
+        meta.videos = Object.entries(dataset)
+            .filter(([k, v]) => v.seriesId === item.seriesId && isEpisode(k))
             .sort((a, b) => {
                 const [aSeason, aEpisode] = [parseInt(a[0].split(":")[1]), parseInt(a[0].split(":")[2])];
                 const [bSeason, bEpisode] = [parseInt(b[0].split(":")[1]), parseInt(b[0].split(":")[2])];
@@ -214,117 +220,104 @@ const generateMeta = (value, key) => {
                 released: new Date(v.year, 0, 1).toISOString(),
                 thumbnail: v.poster
             }));
-        
-        meta.videos = seriesEpisodes;
     }
     
     return meta;
 };
 
-const getStreamQuality = (item) => {
-    if (item.quality) return item.quality;
-    if (item.url && item.url.includes('1080p')) return '1080p';
-    if (item.url && item.url.includes('720p')) return '720p';
-    return 'SD';
-};
-
-const builder = new addonBuilder(manifest);
-
-builder.defineStreamHandler((args) => {
-    if (dataset[args.id]) {
-        const item = dataset[args.id];
-        const quality = getStreamQuality(item);
-        
-        const stream = {
-            title: `${item.name} - ${quality} Latino`,
-            url: item.url,
-            infoHash: item.infoHash,
-            sources: item.sources
+const createStream = (item) => {
+    const stream = {
+        title: `${item.name} - ${getQuality(item)} Latino`
+    };
+    
+    // Agregar fuente de video
+    if (item.url) stream.url = item.url;
+    if (item.infoHash) stream.infoHash = item.infoHash;
+    if (item.sources) stream.sources = item.sources;
+    
+    // Configurar comportamiento
+    if (item.url) {
+        stream.behaviorHints = {
+            notWebReady: false,
+            bingeGroup: item.seriesId || item.id,
+            countryWhitelist: ['CL', 'AR', 'MX', 'CO', 'PE', 'UY', 'EC', 'BO', 'PY']
         };
         
-        if (item.url) {
-            stream.behaviorHints = {
-                notWebReady: false,
-                bingeGroup: item.seriesId || item.id,
-                countryWhitelist: ['CL', 'AR', 'MX', 'CO', 'PE', 'UY', 'EC', 'BO', 'PY']
-            };
-            
-            stream.httpHeaders = {
-                'User-Agent': 'Stremio/4.4.106',
-                'Accept': '*/*',
-                'Accept-Language': 'es-CL,es;q=0.9',
-                'Referer': 'https://app.strem.io/'
-            };
-        }
-        
-        if (item.infoHash) {
-            stream.behaviorHints = { p2p: true };
-        }
-        
-        Object.keys(stream).forEach(key => {
-            if (stream[key] === undefined) delete stream[key];
-        });
-        
-        return Promise.resolve({ streams: [stream] });
+        stream.httpHeaders = {
+            'User-Agent': 'Stremio/4.4.106',
+            'Accept': '*/*',
+            'Accept-Language': 'es-CL,es;q=0.9',
+            'Referer': 'https://app.strem.io/'
+        };
     }
     
-    return Promise.resolve({ streams: [] });
+    if (item.infoHash) {
+        stream.behaviorHints = { p2p: true };
+    }
+    
+    return stream;
+};
+
+// Builders del addon
+const builder = new addonBuilder(manifest);
+
+builder.defineStreamHandler(({ id }) => {
+    const item = dataset[id];
+    return Promise.resolve({
+        streams: item ? [createStream(item)] : []
+    });
 });
 
 builder.defineCatalogHandler((args) => {
     const skip = parseInt(args.extra?.skip) || 0;
     const limit = 20;
     
-    let filteredItems = Object.entries(dataset)
+    const items = Object.entries(dataset)
         .filter(([key, value]) => {
-            if (value.type !== args.type) return false;
-            if (value.type === "series" && key.includes(":")) return false;
+            if (value.type !== args.type || (value.type === "series" && isEpisode(key))) return false;
             
-            if (args.extra && args.extra.genre) {
-                return value.genre && value.genre.some(g => 
+            if (args.extra?.genre) {
+                return value.genre?.some(g => 
                     g.toLowerCase().includes(args.extra.genre.toLowerCase()) ||
                     args.extra.genre.toLowerCase().includes(g.toLowerCase())
                 );
             }
             
             return true;
-        });
-    
-    const paginatedItems = filteredItems
+        })
         .slice(skip, skip + limit)
-        .map(([key, value]) => generateMetaPreview(value, key));
+        .map(([key, value]) => createMetaPreview(value, key));
     
-    return Promise.resolve({ metas: paginatedItems });
+    return Promise.resolve({ metas: items });
 });
 
-builder.defineMetaHandler((args) => {
-    let item = Object.entries(dataset).find(([key, value]) => key === args.id);
+builder.defineMetaHandler(({ id }) => {
+    let item = Object.entries(dataset).find(([key]) => key === id);
     
     if (!item) {
-        item = Object.entries(dataset).find(([key, value]) => {
-            const baseId = key.split(":")[0];
-            return baseId === args.id || value.seriesId === args.id;
-        });
+        item = Object.entries(dataset).find(([key, value]) => 
+            extractBaseId(key) === id || value.seriesId === id
+        );
     }
     
-    if (item) {
-        const [key, value] = item;
-        const meta = generateMeta(value, key);
-        return Promise.resolve({ meta: meta });
-    }
-    
-    return Promise.resolve({ meta: null });
+    return Promise.resolve({
+        meta: item ? createFullMeta(item[1], item[0]) : null
+    });
 });
 
-const addonInterface = builder.getInterface();
+// Servidor
 const port = process.env.PORT || 3000;
 
-serveHTTP(addonInterface, { port }).then(() => {
-    console.log(`🚀 Addon Latino Chile iniciado en puerto ${port}`);
-    console.log(`📱 Manifest: http://localhost:${port}/manifest.json`);
-    console.log(`🎬 Películas: ${Object.values(dataset).filter(v => v.type === 'movie').length}`);
-    console.log(`📺 Series: ${Object.values(dataset).filter(v => v.type === 'series' && !v.id.includes(':')).length}`);
-}).catch(console.error);
+serveHTTP(builder.getInterface(), { port })
+    .then(() => {
+        console.log(`🚀 Addon Latino Chile iniciado en puerto ${port}`);
+        console.log(`📱 Manifest: http://localhost:${port}/manifest.json`);
+        console.log(`🎬 Películas: ${Object.values(dataset).filter(v => v.type === 'movie').length}`);
+        console.log(`📺 Series: ${Object.values(dataset).filter(v => v.type === 'series' && !v.id.includes(':')).length}`);
+    })
+    .catch(console.error);
 
-process.on('SIGINT', () => process.exit(0));
-process.on('SIGTERM', () => process.exit(0));
+// Manejo de señales
+['SIGINT', 'SIGTERM'].forEach(signal => {
+    process.on(signal, () => process.exit(0));
+});
