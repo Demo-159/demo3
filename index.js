@@ -3,8 +3,8 @@ const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 const manifest = {
     "id": "org.stremio.addon-latino-chile",
     "version": "1.1.0",
-    "name": "Latino Chile Addon",
-    "description": "Contenido en español latino optimizado para Chile - Películas y series familiares",
+    "name": "Catálogo de Contenidos",
+    "description": "Contenido en español latino - Películas y series",
     "icon": "https://via.placeholder.com/256x256/FF6B6B/FFFFFF?text=CHILE",
     "background": "https://via.placeholder.com/1920x1080/4ECDC4/FFFFFF?text=LATINO+CHILE",
     "resources": ["catalog", "stream", "meta"],
