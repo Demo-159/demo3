@@ -1,34 +1,53 @@
-const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
+const { addonBuilder } = require("stremio-addon-sdk");
 const express = require('express');
-const path = require('path');
 
 const manifest = {
     "id": "org.stremio.addon-latino-chile",
     "version": "1.2.0",
     "name": "Reproducir ahora",
     "description": "Contenido en Español Latino",
-    "icon": "https://us.123rf.com/450wm/vladwel/vladwel1702/vladwel170200039/71606485-ilustraci%C3%B3n-de-vector-de-claqueta-aislada-sobre-fondo-de-color-azul-icono-de-claqueta-de-estilo.jpg?ver=6",
+    "icon": "https://i.imgur.com/ZKoR8Qa.png",
     "resources": ["catalog", "stream", "meta"],
     "types": ["movie", "series"],
     "catalogs": [
         {
             type: "movie",
             id: "peliculas-latino-cl",
-            name: "Recomendación",
-            extra: [{ name: "genre", options: ["Acción", "Comedia", "Drama", "Animación", "Aventura", "Familiar"] }]
+            name: "Películas Latino",
+            extra: [
+                { 
+                    name: "genre", 
+                    options: ["Acción", "Comedia", "Drama", "Animación", "Aventura", "Familiar"],
+                    isRequired: false
+                },
+                {
+                    name: "skip",
+                    isRequired: false
+                }
+            ]
         },
         {
             type: "series",
-            id: "series-latino-cl",
-            name: "Recomendación",
-            extra: [{ name: "genre", options: ["Comedia", "Animación", "Familiar", "Drama"] }]
+            id: "series-latino-cl", 
+            name: "Series Latino",
+            extra: [
+                { 
+                    name: "genre", 
+                    options: ["Comedia", "Animación", "Familiar", "Drama"],
+                    isRequired: false
+                },
+                {
+                    name: "skip",
+                    isRequired: false
+                }
+            ]
         }
     ],
     "idPrefixes": ["latino_", "tt"],
     "behaviorHints": {
-        "adult": true,
-        "p2p": true,
-        "configurable": false,
+        "adult": false,
+        "p2p": false,
+        "configurable": true,
         "configurationRequired": false
     }
 };
@@ -36,72 +55,61 @@ const manifest = {
 // Dataset inicial vacío - el contenido se añadirá desde el panel
 let dataset = {};
 
+// Funciones auxiliares mejoradas
 const extractBaseId = (key) => key.split(":")[0];
 const isEpisode = (key) => key.includes(":");
 const getQuality = (item) => item.quality || (item.url?.includes('1080p') ? '1080p' : item.url?.includes('720p') ? '720p' : 'SD');
 
-const createMetaPreview = (item, key) => ({
-    id: extractBaseId(key),
-    type: item.type,
-    name: item.seriesName || item.name,
-    genre: item.genre,
-    year: item.year,
-    poster: item.poster,
-    posterShape: "poster",
-    background: item.background,
-    description: item.description,
-    imdbRating: item.imdbRating,
-    language: item.language
-});
+const createMetaPreview = (item, key) => {
+    const baseId = extractBaseId(key);
+    return {
+        id: baseId,
+        type: item.type,
+        name: item.seriesName || item.name,
+        genres: Array.isArray(item.genre) ? item.genre : [item.genre || "General"],
+        year: parseInt(item.year) || new Date().getFullYear(),
+        poster: item.poster || "https://via.placeholder.com/300x450/000000/FFFFFF/?text=No+Image",
+        posterShape: "poster",
+        background: item.background || item.poster,
+        description: item.description || "Sin descripción disponible",
+        imdbRating: item.imdbRating ? parseFloat(item.imdbRating) : undefined,
+        language: "spa"
+    };
+};
 
 const createFullMeta = (item, key) => {
     try {
         const meta = createMetaPreview(item, key);
         
-        Object.assign(meta, {
-            director: item.director,
-            cast: item.cast,
-            runtime: item.runtime,
-            language: "Español Latino"
-        });
+        // Añadir información adicional
+        if (item.director) meta.director = Array.isArray(item.director) ? item.director : [item.director];
+        if (item.cast) meta.cast = Array.isArray(item.cast) ? item.cast : item.cast.split(',').map(s => s.trim());
+        if (item.runtime) meta.runtime = item.runtime;
         
+        // Para series, añadir episodes
         if (item.type === "series") {
-            meta.videos = Object.entries(dataset)
+            const episodes = Object.entries(dataset)
                 .filter(([k, v]) => {
-                    try {
-                        return v.seriesId === item.seriesId && isEpisode(k);
-                    } catch (error) {
-                        console.error('Error filtering episodes:', error);
-                        return false;
-                    }
+                    return v.seriesId === item.seriesId && isEpisode(k);
                 })
                 .sort((a, b) => {
-                    try {
-                        const [aSeason, aEpisode] = [parseInt(a[0].split(":")[1]), parseInt(a[0].split(":")[2])];
-                        const [bSeason, bEpisode] = [parseInt(b[0].split(":")[1]), parseInt(b[0].split(":")[2])];
-                        return aSeason !== bSeason ? aSeason - bSeason : aEpisode - bEpisode;
-                    } catch (error) {
-                        console.error('Error sorting episodes:', error);
-                        return 0;
-                    }
+                    const [aSeason, aEpisode] = [parseInt(a[0].split(":")[1]), parseInt(a[0].split(":")[2])];
+                    const [bSeason, bEpisode] = [parseInt(b[0].split(":")[1]), parseInt(b[0].split(":")[2])];
+                    return aSeason !== bSeason ? aSeason - bSeason : aEpisode - bEpisode;
                 })
-                .map(([k, v]) => {
-                    try {
-                        return {
-                            id: k,
-                            title: `S${v.season}E${v.episode} - ${v.name}`,
-                            season: v.season,
-                            episode: v.episode,
-                            overview: v.description,
-                            released: new Date(v.year, 0, 1).toISOString(),
-                            thumbnail: v.poster
-                        };
-                    } catch (error) {
-                        console.error('Error creating episode meta:', error);
-                        return null;
-                    }
-                })
-                .filter(episode => episode !== null);
+                .map(([k, v]) => ({
+                    id: k,
+                    title: `S${String(v.season).padStart(2, '0')}E${String(v.episode).padStart(2, '0')} - ${v.name}`,
+                    season: parseInt(v.season),
+                    episode: parseInt(v.episode),
+                    overview: v.description || "Sin descripción",
+                    released: new Date(v.year || item.year, 0, 1).toISOString(),
+                    thumbnail: v.poster || item.poster
+                }));
+            
+            if (episodes.length > 0) {
+                meta.videos = episodes;
+            }
         }
         
         return meta;
@@ -112,31 +120,25 @@ const createFullMeta = (item, key) => {
 };
 
 const createStream = (item) => {
+    const quality = getQuality(item);
     const stream = {
-        title: `${item.name} - ${getQuality(item)} Latino`
+        title: `${item.name || item.seriesName} - ${quality} [Latino]`,
+        name: `${item.name || item.seriesName}`,
+        description: `Calidad: ${quality} | Idioma: Español Latino`
     };
     
-    if (item.url) stream.url = item.url;
-    if (item.infoHash) stream.infoHash = item.infoHash;
-    if (item.sources) stream.sources = item.sources;
-    
+    // Configurar URL o torrent
     if (item.url) {
+        stream.url = item.url;
         stream.behaviorHints = {
             notWebReady: false,
             bingeGroup: item.seriesId || item.id,
             countryWhitelist: ['CL', 'AR', 'MX', 'CO', 'PE', 'UY', 'EC', 'BO', 'PY']
         };
-        
-        stream.httpHeaders = {
-            'User-Agent': 'Stremio/4.4.106',
-            'Accept': '*/*',
-            'Accept-Language': 'es-CL,es;q=0.9',
-            'Referer': 'https://app.strem.io/'
-        };
-    }
-    
-    if (item.infoHash) {
+    } else if (item.infoHash) {
+        stream.infoHash = item.infoHash;
         stream.behaviorHints = { p2p: true };
+        if (item.fileIdx) stream.fileIdx = item.fileIdx;
     }
     
     return stream;
@@ -145,52 +147,61 @@ const createStream = (item) => {
 // Crear el builder de Stremio
 const builder = new addonBuilder(manifest);
 
-builder.defineStreamHandler(({ id }) => {
+// Handler para streams
+builder.defineStreamHandler(({ type, id }) => {
+    console.log(`Stream request: ${type}/${id}`);
+    
     try {
         const item = dataset[id];
-        return Promise.resolve({
-            streams: item ? [createStream(item)] : []
-        });
+        if (!item) {
+            console.log(`No item found for ID: ${id}`);
+            return Promise.resolve({ streams: [] });
+        }
+        
+        const stream = createStream(item);
+        console.log(`Stream created:`, stream.title);
+        
+        return Promise.resolve({ streams: [stream] });
     } catch (error) {
         console.error('Error in streamHandler:', error);
         return Promise.resolve({ streams: [] });
     }
 });
 
-builder.defineCatalogHandler((args) => {
+// Handler para catálogos
+builder.defineCatalogHandler(({ type, id, extra }) => {
+    console.log(`Catalog request: ${type}/${id}`, extra);
+    
     try {
-        const skip = parseInt(args.extra?.skip) || 0;
+        const skip = parseInt(extra?.skip) || 0;
         const limit = 20;
         
-        const items = Object.entries(dataset)
+        let items = Object.entries(dataset)
             .filter(([key, value]) => {
-                try {
-                    if (value.type !== args.type || (value.type === "series" && isEpisode(key))) return false;
-                    
-                    if (args.extra?.genre) {
-                        return value.genre?.some(g => 
-                            g.toLowerCase().includes(args.extra.genre.toLowerCase()) ||
-                            args.extra.genre.toLowerCase().includes(g.toLowerCase())
-                        );
-                    }
-                    
-                    return true;
-                } catch (filterError) {
-                    console.error('Error filtering item:', filterError);
-                    return false;
+                // Filtrar por tipo
+                if (value.type !== type) return false;
+                
+                // Para series, no mostrar episodios en el catálogo
+                if (value.type === "series" && isEpisode(key)) return false;
+                
+                // Filtrar por género si se especifica
+                if (extra?.genre) {
+                    const itemGenres = Array.isArray(value.genre) ? value.genre : [value.genre];
+                    return itemGenres.some(g => 
+                        g && (
+                            g.toLowerCase().includes(extra.genre.toLowerCase()) ||
+                            extra.genre.toLowerCase().includes(g.toLowerCase())
+                        )
+                    );
                 }
+                
+                return true;
             })
             .slice(skip, skip + limit)
-            .map(([key, value]) => {
-                try {
-                    return createMetaPreview(value, key);
-                } catch (mapError) {
-                    console.error('Error creating meta preview:', mapError);
-                    return null;
-                }
-            })
+            .map(([key, value]) => createMetaPreview(value, key))
             .filter(item => item !== null);
         
+        console.log(`Catalog response: ${items.length} items`);
         return Promise.resolve({ metas: items });
     } catch (error) {
         console.error('Error in catalogHandler:', error);
@@ -198,31 +209,37 @@ builder.defineCatalogHandler((args) => {
     }
 });
 
-builder.defineMetaHandler(({ id }) => {
+// Handler para metadatos
+builder.defineMetaHandler(({ type, id }) => {
+    console.log(`Meta request: ${type}/${id}`);
+    
     try {
+        // Buscar por ID exacto primero
         let item = Object.entries(dataset).find(([key]) => key === id);
         
+        // Si no se encuentra, buscar por ID base o seriesId
         if (!item) {
             item = Object.entries(dataset).find(([key, value]) => 
                 extractBaseId(key) === id || value.seriesId === id
             );
         }
         
-        return Promise.resolve({
-            meta: item ? createFullMeta(item[1], item[0]) : null
-        });
+        if (!item) {
+            console.log(`No meta found for ID: ${id}`);
+            return Promise.resolve({ meta: null });
+        }
+        
+        const meta = createFullMeta(item[1], item[0]);
+        console.log(`Meta created for:`, meta?.name);
+        
+        return Promise.resolve({ meta });
     } catch (error) {
         console.error('Error in metaHandler:', error);
         return Promise.resolve({ meta: null });
     }
 });
 
-// Crear servidor Express para el panel de administración
-const app = express();
-app.use(express.json());
-app.use(express.static('public'));
-
-// Panel de administración HTML
+// Panel de administración (manteniendo el HTML original pero simplificado)
 const adminPanelHTML = `
 <!DOCTYPE html>
 <html lang="es">
@@ -235,43 +252,40 @@ const adminPanelHTML = `
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; text-align: center; }
-        .tabs { display: flex; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .tab { flex: 1; padding: 15px 20px; background: #f8f9fa; border: none; cursor: pointer; transition: all 0.3s; font-size: 16px; }
-        .tab.active { background: #667eea; color: white; }
-        .tab:hover { background: #e9ecef; }
-        .tab.active:hover { background: #5a6fd8; }
-        .form-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #667eea; }
-        .form-group textarea { resize: vertical; min-height: 80px; }
-        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; transition: transform 0.2s; }
-        .btn:hover { transform: translateY(-2px); }
-        .btn-danger { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); }
-        .content-list { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .content-item { padding: 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 15px; }
-        .content-item:last-child { border-bottom: none; }
-        .content-poster { width: 60px; height: 90px; object-fit: cover; border-radius: 4px; }
-        .content-info { flex: 1; }
-        .content-title { font-size: 18px; font-weight: 600; margin-bottom: 5px; }
-        .content-meta { color: #666; font-size: 14px; }
-        .status { padding: 20px; text-align: center; border-radius: 6px; margin: 10px 0; }
-        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .hidden { display: none; }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
         .stat-number { font-size: 32px; font-weight: bold; color: #667eea; }
         .stat-label { color: #666; margin-top: 5px; }
+        .addon-url { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .url-box { display: flex; align-items: center; gap: 10px; }
+        .url-input { flex: 1; padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px; font-family: monospace; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+        .form-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px; }
+        .status { padding: 15px; text-align: center; border-radius: 6px; margin: 10px 0; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎬 Panel de Administración - Stremio Addon</h1>
+            <h1>🎬 Panel de Administración - Stremio Addon Chile</h1>
             <p>Gestiona tu contenido de forma fácil e intuitiva</p>
+        </div>
+
+        <div class="addon-url">
+            <h3>📱 URL del Addon para Stremio:</h3>
+            <div class="url-box">
+                <input type="text" class="url-input" id="addonUrl" readonly>
+                <button class="btn" onclick="copyUrl()">📋 Copiar</button>
+            </div>
+            <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                Copia esta URL y pégala en Stremio → Addons → Add Addon
+            </p>
         </div>
 
         <div class="stats">
@@ -289,228 +303,26 @@ const adminPanelHTML = `
             </div>
         </div>
 
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('movie')">📽️ Añadir Película</button>
-            <button class="tab" onclick="showTab('series')">📺 Añadir Serie</button>
-            <button class="tab" onclick="showTab('episode')">🎞️ Añadir Episodio</button>
-            <button class="tab" onclick="showTab('list')">📋 Ver Contenido</button>
-        </div>
-
         <div id="status"></div>
 
-        <!-- Formulario Película -->
-        <div id="movieForm" class="form-container">
-            <h2>🎬 Añadir Nueva Película</h2>
-            <form onsubmit="addMovie(event)">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>ID IMDb *</label>
-                        <input type="text" name="id" placeholder="tt1234567" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Título *</label>
-                        <input type="text" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Año *</label>
-                        <input type="number" name="year" min="1900" max="2030" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Géneros *</label>
-                        <select name="genre" multiple size="4" required>
-                            <option value="Acción">Acción</option>
-                            <option value="Comedia">Comedia</option>
-                            <option value="Drama">Drama</option>
-                            <option value="Animación">Animación</option>
-                            <option value="Aventura">Aventura</option>
-                            <option value="Familiar">Familiar</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Director</label>
-                        <input type="text" name="director">
-                    </div>
-                    <div class="form-group">
-                        <label>Reparto (separado por comas)</label>
-                        <input type="text" name="cast" placeholder="Actor 1, Actor 2, Actor 3">
-                    </div>
-                    <div class="form-group">
-                        <label>Duración</label>
-                        <input type="text" name="runtime" placeholder="120 min">
-                    </div>
-                    <div class="form-group">
-                        <label>Rating IMDb</label>
-                        <input type="text" name="imdbRating" placeholder="7.5">
-                    </div>
-                    <div class="form-group">
-                        <label>URL del Poster</label>
-                        <input type="url" name="poster">
-                    </div>
-                    <div class="form-group">
-                        <label>URL de Fondo</label>
-                        <input type="url" name="background">
-                    </div>
-                    <div class="form-group">
-                        <label>URL del Video *</label>
-                        <input type="url" name="url" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Calidad</label>
-                        <select name="quality">
-                            <option value="1080p">1080p</option>
-                            <option value="720p">720p</option>
-                            <option value="SD">SD</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <textarea name="description" rows="4"></textarea>
-                </div>
-                <button type="submit" class="btn">➕ Añadir Película</button>
-            </form>
-        </div>
-
-        <!-- Formulario Serie -->
-        <div id="seriesForm" class="form-container hidden">
-            <h2>📺 Añadir Nueva Serie</h2>
-            <form onsubmit="addSeries(event)">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>ID IMDb *</label>
-                        <input type="text" name="id" placeholder="tt1234567" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Título *</label>
-                        <input type="text" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Año de Inicio *</label>
-                        <input type="number" name="year" min="1900" max="2030" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Géneros *</label>
-                        <select name="genre" multiple size="4" required>
-                            <option value="Comedia">Comedia</option>
-                            <option value="Animación">Animación</option>
-                            <option value="Familiar">Familiar</option>
-                            <option value="Drama">Drama</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Director</label>
-                        <input type="text" name="director">
-                    </div>
-                    <div class="form-group">
-                        <label>Reparto (separado por comas)</label>
-                        <input type="text" name="cast" placeholder="Actor 1, Actor 2, Actor 3">
-                    </div>
-                    <div class="form-group">
-                        <label>Rating IMDb</label>
-                        <input type="text" name="imdbRating" placeholder="8.5">
-                    </div>
-                    <div class="form-group">
-                        <label>URL del Poster</label>
-                        <input type="url" name="poster">
-                    </div>
-                    <div class="form-group">
-                        <label>URL de Fondo</label>
-                        <input type="url" name="background">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <textarea name="description" rows="4"></textarea>
-                </div>
-                <button type="submit" class="btn">➕ Añadir Serie</button>
-            </form>
-        </div>
-
-        <!-- Formulario Episodio -->
-        <div id="episodeForm" class="form-container hidden">
-            <h2>🎞️ Añadir Nuevo Episodio</h2>
-            <form onsubmit="addEpisode(event)">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Serie *</label>
-                        <select name="seriesId" id="seriesSelect" required>
-                            <option value="">Selecciona una serie</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Temporada *</label>
-                        <input type="number" name="season" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Episodio *</label>
-                        <input type="number" name="episode" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Título del Episodio *</label>
-                        <input type="text" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Año</label>
-                        <input type="number" name="year" min="1900" max="2030">
-                    </div>
-                    <div class="form-group">
-                        <label>Duración</label>
-                        <input type="text" name="runtime" placeholder="25 min">
-                    </div>
-                    <div class="form-group">
-                        <label>URL del Video *</label>
-                        <input type="url" name="url" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Calidad</label>
-                        <select name="quality">
-                            <option value="1080p">1080p</option>
-                            <option value="720p">720p</option>
-                            <option value="SD">SD</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>URL del Poster</label>
-                        <input type="url" name="poster">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <textarea name="description" rows="4"></textarea>
-                </div>
-                <button type="submit" class="btn">➕ Añadir Episodio</button>
-            </form>
-        </div>
-
-        <!-- Lista de Contenido -->
-        <div id="contentList" class="hidden">
-            <div class="content-list" id="contentItems">
-                <!-- El contenido se cargará aquí -->
-            </div>
+        <div class="form-container">
+            <h2>🎬 Añadir Película de Prueba</h2>
+            <button class="btn" onclick="addTestMovie()">➕ Añadir Película de Prueba</button>
+            <p style="margin-top: 10px; color: #666;">
+                Esto añadirá una película de prueba para verificar que el addon funciona correctamente.
+            </p>
         </div>
     </div>
 
     <script>
-        function showTab(tab) {
-            // Ocultar todos los formularios
-            document.querySelectorAll('.form-container, #contentList').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            
-            // Mostrar el formulario seleccionado
-            if (tab === 'movie') {
-                document.getElementById('movieForm').classList.remove('hidden');
-            } else if (tab === 'series') {
-                document.getElementById('seriesForm').classList.remove('hidden');
-            } else if (tab === 'episode') {
-                document.getElementById('episodeForm').classList.remove('hidden');
-                loadSeries();
-            } else if (tab === 'list') {
-                document.getElementById('contentList').classList.remove('hidden');
-                loadContent();
-            }
-            
-            // Activar pestaña
-            event.target.classList.add('active');
+        // Establecer URL del addon
+        document.getElementById('addonUrl').value = window.location.origin + '/manifest.json';
+
+        function copyUrl() {
+            const urlInput = document.getElementById('addonUrl');
+            urlInput.select();
+            document.execCommand('copy');
+            showStatus('✅ URL copiada al portapapeles');
         }
 
         function showStatus(message, type = 'success') {
@@ -519,154 +331,36 @@ const adminPanelHTML = `
             setTimeout(() => status.innerHTML = '', 5000);
         }
 
-        async function addMovie(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
-            
-            // Procesar géneros
-            data.genre = Array.from(event.target.genre.selectedOptions).map(option => option.value);
-            
-            // Procesar reparto
-            if (data.cast) data.cast = data.cast.split(',').map(s => s.trim());
-            
+        async function addTestMovie() {
+            const testMovie = {
+                id: 'tt0111161',
+                name: 'The Shawshank Redemption',
+                year: 1994,
+                genre: ['Drama'],
+                type: 'movie',
+                description: 'Película de prueba para verificar el funcionamiento del addon.',
+                poster: 'https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                quality: '1080p',
+                language: 'Latino'
+            };
+
             try {
                 const response = await fetch('/admin/add-movie', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(testMovie)
                 });
                 
                 const result = await response.json();
                 if (result.success) {
-                    showStatus('✅ Película añadida correctamente');
-                    event.target.reset();
+                    showStatus('✅ Película de prueba añadida correctamente');
                     updateStats();
                 } else {
                     showStatus(result.error, 'error');
                 }
             } catch (error) {
-                showStatus('❌ Error al añadir película', 'error');
-            }
-        }
-
-        async function addSeries(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
-            
-            data.genre = Array.from(event.target.genre.selectedOptions).map(option => option.value);
-            if (data.cast) data.cast = data.cast.split(',').map(s => s.trim());
-            
-            try {
-                const response = await fetch('/admin/add-series', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    showStatus('✅ Serie añadida correctamente');
-                    event.target.reset();
-                    updateStats();
-                } else {
-                    showStatus(result.error, 'error');
-                }
-            } catch (error) {
-                showStatus('❌ Error al añadir serie', 'error');
-            }
-        }
-
-        async function addEpisode(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const data = Object.fromEntries(formData.entries());
-            
-            try {
-                const response = await fetch('/admin/add-episode', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    showStatus('✅ Episodio añadido correctamente');
-                    event.target.reset();
-                    updateStats();
-                } else {
-                    showStatus(result.error, 'error');
-                }
-            } catch (error) {
-                showStatus('❌ Error al añadir episodio', 'error');
-            }
-        }
-
-        async function loadSeries() {
-            try {
-                const response = await fetch('/admin/series');
-                const series = await response.json();
-                const select = document.getElementById('seriesSelect');
-                select.innerHTML = '<option value="">Selecciona una serie</option>';
-                
-                series.forEach(s => {
-                    const option = document.createElement('option');
-                    option.value = s.id;
-                    option.textContent = s.name;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error loading series:', error);
-            }
-        }
-
-        async function loadContent() {
-            try {
-                const response = await fetch('/admin/content');
-                const content = await response.json();
-                const container = document.getElementById('contentItems');
-                
-                if (content.length === 0) {
-                    container.innerHTML = '<div style="padding: 40px; text-align: center; color: #666;">No hay contenido añadido aún</div>';
-                    return;
-                }
-                
-                container.innerHTML = content.map(item => \`
-                    <div class="content-item">
-                        <img src="\${item.poster || '/placeholder.jpg'}" alt="\${item.name}" class="content-poster" onerror="this.src='https://via.placeholder.com/60x90?text=No+Image'">
-                        <div class="content-info">
-                            <div class="content-title">\${item.name}</div>
-                            <div class="content-meta">
-                                \${item.type === 'movie' ? '🎬 Película' : item.type === 'series' ? '📺 Serie' : '🎞️ Episodio'} • 
-                                \${item.year} • 
-                                \${item.genre ? item.genre.join(', ') : 'Sin género'}
-                            </div>
-                        </div>
-                        <button class="btn btn-danger" onclick="deleteContent('\${item.id}')">🗑️ Eliminar</button>
-                    </div>
-                \`).join('');
-            } catch (error) {
-                console.error('Error loading content:', error);
-            }
-        }
-
-        async function deleteContent(id) {
-            if (!confirm('¿Estás seguro de que quieres eliminar este contenido?')) return;
-            
-            try {
-                const response = await fetch(\`/admin/delete/\${id}\`, { method: 'DELETE' });
-                const result = await response.json();
-                
-                if (result.success) {
-                    showStatus('✅ Contenido eliminado correctamente');
-                    loadContent();
-                    updateStats();
-                } else {
-                    showStatus(result.error, 'error');
-                }
-            } catch (error) {
-                showStatus('❌ Error al eliminar contenido', 'error');
+                showStatus('❌ Error al añadir película de prueba', 'error');
             }
         }
 
@@ -690,16 +384,20 @@ const adminPanelHTML = `
 </html>
 `;
 
-// Rutas del panel de administración
+// Crear servidor Express
+const app = express();
+app.use(express.json());
+
+// Panel de administración
 app.get('/admin', (req, res) => {
     res.send(adminPanelHTML);
 });
 
+// API endpoints para el panel
 app.post('/admin/add-movie', (req, res) => {
     try {
         const movie = req.body;
         
-        // Validación básica
         if (!movie.id || !movie.name || !movie.url) {
             return res.json({ success: false, error: 'Campos obligatorios faltantes' });
         }
@@ -708,6 +406,7 @@ app.post('/admin/add-movie', (req, res) => {
         movie.language = 'Latino';
         
         dataset[movie.id] = movie;
+        console.log(`Movie added: ${movie.name} (${movie.id})`);
         res.json({ success: true });
     } catch (error) {
         console.error('Error adding movie:', error);
@@ -715,128 +414,10 @@ app.post('/admin/add-movie', (req, res) => {
     }
 });
 
-app.post('/admin/add-series', (req, res) => {
-    try {
-        const series = req.body;
-        
-        // Validación básica
-        if (!series.id || !series.name) {
-            return res.json({ success: false, error: 'Campos obligatorios faltantes' });
-        }
-        
-        series.type = 'series';
-        series.language = 'Latino';
-        series.seriesId = series.id;
-        series.seriesName = series.name;
-        
-        dataset[series.id] = series;
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error adding series:', error);
-        res.json({ success: false, error: 'Error interno del servidor' });
-    }
-});
-
-app.post('/admin/add-episode', (req, res) => {
-    try {
-        const episode = req.body;
-        
-        // Validación básica
-        if (!episode.seriesId || !episode.season || !episode.episode || !episode.name || !episode.url) {
-            return res.json({ success: false, error: 'Campos obligatorios faltantes' });
-        }
-        
-        const seriesData = dataset[episode.seriesId];
-        
-        if (!seriesData) {
-            return res.json({ success: false, error: 'Serie no encontrada' });
-        }
-        
-        const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
-        
-        episode.type = 'series';
-        episode.language = 'Latino';
-        episode.seriesName = seriesData.name;
-        episode.genre = seriesData.genre;
-        episode.season = parseInt(episode.season);
-        episode.episode = parseInt(episode.episode);
-        episode.year = episode.year || seriesData.year;
-        
-        dataset[episodeId] = episode;
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error adding episode:', error);
-        res.json({ success: false, error: 'Error interno del servidor' });
-    }
-});
-
-app.get('/admin/series', (req, res) => {
-    try {
-        const series = Object.values(dataset)
-            .filter(item => item.type === 'series' && !item.id.includes(':'))
-            .map(s => ({ id: s.id, name: s.name }));
-        res.json(series);
-    } catch (error) {
-        console.error('Error getting series:', error);
-        res.json([]);
-    }
-});
-
-app.get('/admin/content', (req, res) => {
-    try {
-        const content = Object.entries(dataset)
-            .map(([key, item]) => ({
-                ...item,
-                id: key,
-                type: item.type === 'series' && key.includes(':') ? 'episode' : item.type
-            }))
-            .sort((a, b) => {
-                try {
-                    if (a.type !== b.type) {
-                        const order = { movie: 0, series: 1, episode: 2 };
-                        return order[a.type] - order[b.type];
-                    }
-                    return a.name.localeCompare(b.name);
-                } catch (error) {
-                    return 0;
-                }
-            });
-        res.json(content);
-    } catch (error) {
-        console.error('Error getting content:', error);
-        res.json([]);
-    }
-});
-
-app.delete('/admin/delete/:id', (req, res) => {
-    try {
-        const id = req.params.id;
-        
-        if (dataset[id]) {
-            // Si es una serie, también eliminar sus episodios
-            if (dataset[id].type === 'series' && !id.includes(':')) {
-                Object.keys(dataset).forEach(key => {
-                    if (key.startsWith(id + ':')) {
-                        delete dataset[key];
-                    }
-                });
-            }
-            
-            delete dataset[id];
-            res.json({ success: true });
-        } else {
-            res.json({ success: false, error: 'Contenido no encontrado' });
-        }
-    } catch (error) {
-        console.error('Error deleting content:', error);
-        res.json({ success: false, error: 'Error interno del servidor' });
-    }
-});
-
 app.get('/admin/stats', (req, res) => {
     try {
         const movies = Object.values(dataset).filter(item => item.type === 'movie').length;
-        const series = Object.values(dataset).filter(item => item.type === 'series' && !item.id.includes(':')).length;
+        const series = Object.values(dataset).filter(item => item.type === 'series' && !item.id?.includes(':')).length;
         const episodes = Object.keys(dataset).filter(key => key.includes(':')).length;
         
         res.json({ movies, series, episodes });
@@ -846,92 +427,47 @@ app.get('/admin/stats', (req, res) => {
     }
 });
 
-// Integrar el addon de Stremio con Express
-const port = process.env.PORT || 3000;
+// Rutas del addon de Stremio
+const stremioInterface = builder.getInterface();
 
-// Crear servidor que maneje tanto el addon como el panel
-const addonInterface = builder.getInterface();
-
-// Rutas del addon de Stremio con manejo de errores
 app.get('/manifest.json', (req, res) => {
-    try {
-        res.json(addonInterface.manifest);
-    } catch (error) {
-        console.error('Error serving manifest:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
+    console.log('Manifest requested');
+    res.json(stremioInterface.manifest);
 });
 
 app.get('/catalog/:type/:id.json', (req, res) => {
-    try {
-        addonInterface.get(req, res);
-    } catch (error) {
-        console.error('Error serving catalog:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
+    console.log(`Catalog requested: ${req.params.type}/${req.params.id}`);
+    stremioInterface(req, res);
 });
 
 app.get('/catalog/:type/:id/:extra.json', (req, res) => {
-    try {
-        addonInterface.get(req, res);
-    } catch (error) {
-        console.error('Error serving catalog with extra:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
+    console.log(`Catalog with extra requested: ${req.params.type}/${req.params.id}/${req.params.extra}`);
+    stremioInterface(req, res);
 });
 
 app.get('/meta/:type/:id.json', (req, res) => {
-    try {
-        addonInterface.get(req, res);
-    } catch (error) {
-        console.error('Error serving meta:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
+    console.log(`Meta requested: ${req.params.type}/${req.params.id}`);
+    stremioInterface(req, res);
 });
 
 app.get('/stream/:type/:id.json', (req, res) => {
-    try {
-        addonInterface.get(req, res);
-    } catch (error) {
-        console.error('Error serving stream:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
+    console.log(`Stream requested: ${req.params.type}/${req.params.id}`);
+    stremioInterface(req, res);
 });
 
-// Ruta raíz que redirige al panel
+// Ruta raíz
 app.get('/', (req, res) => {
     res.redirect('/admin');
 });
 
-// Manejo de errores global
-app.use((error, req, res, next) => {
-    console.error('Unhandled error:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-});
-
-// Manejo de promesas no capturadas
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-});
+// Iniciar servidor
+const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(`🚀 Addon Chile iniciado en puerto ${port}`);
+    console.log(`🚀 Stremio Addon Chile iniciado en puerto ${port}`);
     console.log(`📱 Panel de Administración: http://localhost:${port}/admin`);
-    console.log(`📱 Manifest: http://localhost:${port}/manifest.json`);
-    console.log(`🎬 Películas: ${Object.values(dataset).filter(v => v.type === 'movie').length}`);
-    console.log(`📺 Series: ${Object.values(dataset).filter(v => v.type === 'series' && !v.id.includes(':')).length}`);
-    console.log(`🎞️ Episodios: ${Object.keys(dataset).filter(k => k.includes(':')).length}`);
+    console.log(`📱 Manifest URL: http://localhost:${port}/manifest.json`);
+    console.log(`🎬 Total contenido: ${Object.keys(dataset).length} items`);
 }).on('error', (error) => {
     console.error('Error starting server:', error);
-});
-
-['SIGINT', 'SIGTERM'].forEach(signal => {
-    process.on(signal, () => {
-        console.log(`Received ${signal}, shutting down gracefully...`);
-        process.exit(0);
-    });
 });
