@@ -306,7 +306,7 @@ const port = process.env.PORT || 3000;
 
 serveHTTP(builder.getInterface(), { port })
     .then(() => {
-        console.log(`🚀 Addon Latino Chile iniciado en puerto ${port}`);
+        console.log(`🚀 Addon Chile iniciado en puerto ${port}`);
         console.log(`📱 Manifest: http://localhost:${port}/manifest.json`);
         console.log(`🎬 Películas: ${Object.values(dataset).filter(v => v.type === 'movie').length}`);
         console.log(`📺 Series: ${Object.values(dataset).filter(v => v.type === 'series' && !v.id.includes(':')).length}`);
