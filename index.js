@@ -2,9 +2,9 @@ const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 
 const manifest = {
     "id": "org.stremio.addon-latino-chile",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "name": "Reproducir ahora",
-    "description": "Contenido en español latino - Películas y series",
+    "description": "Contenido en Español Latino",
     "icon": "https://us.123rf.com/450wm/vladwel/vladwel1702/vladwel170200039/71606485-ilustraci%C3%B3n-de-vector-de-claqueta-aislada-sobre-fondo-de-color-azul-icono-de-claqueta-de-estilo.jpg?ver=6",
     "resources": ["catalog", "stream", "meta"],
     "types": ["movie", "series"],
