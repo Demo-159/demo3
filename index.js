@@ -137,7 +137,7 @@ const dataset = {
     "tt0229889:1:2": {
         id: "tt0229889:1:2",
         type: "series",
-        name: "El peso de Quico",
+        name: "El Peso de Quico",
         genre: ["Comedia", "Familiar"],
         year: 1971,
         episode: 2,
@@ -154,7 +154,7 @@ const dataset = {
     "tt0229889:1:3": {
         id: "tt0229889:1:3",
         type: "series",
-        name: "La fiesta de la buena vecindad",
+        name: "La Fiesta de la Buena Vecindad",
         genre: ["Comedia", "Familiar"],
         year: 1971,
         episode: 3,
