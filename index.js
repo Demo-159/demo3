@@ -55,35 +55,60 @@ const createMetaPreview = (item, key) => ({
 });
 
 const createFullMeta = (item, key) => {
-    const meta = createMetaPreview(item, key);
-    
-    Object.assign(meta, {
-        director: item.director,
-        cast: item.cast,
-        runtime: item.runtime,
-        language: "Español Latino"
-    });
-    
-    if (item.type === "series") {
-        meta.videos = Object.entries(dataset)
-            .filter(([k, v]) => v.seriesId === item.seriesId && isEpisode(k))
-            .sort((a, b) => {
-                const [aSeason, aEpisode] = [parseInt(a[0].split(":")[1]), parseInt(a[0].split(":")[2])];
-                const [bSeason, bEpisode] = [parseInt(b[0].split(":")[1]), parseInt(b[0].split(":")[2])];
-                return aSeason !== bSeason ? aSeason - bSeason : aEpisode - bEpisode;
-            })
-            .map(([k, v]) => ({
-                id: k,
-                title: `S${v.season}E${v.episode} - ${v.name}`,
-                season: v.season,
-                episode: v.episode,
-                overview: v.description,
-                released: new Date(v.year, 0, 1).toISOString(),
-                thumbnail: v.poster
-            }));
+    try {
+        const meta = createMetaPreview(item, key);
+        
+        Object.assign(meta, {
+            director: item.director,
+            cast: item.cast,
+            runtime: item.runtime,
+            language: "Español Latino"
+        });
+        
+        if (item.type === "series") {
+            meta.videos = Object.entries(dataset)
+                .filter(([k, v]) => {
+                    try {
+                        return v.seriesId === item.seriesId && isEpisode(k);
+                    } catch (error) {
+                        console.error('Error filtering episodes:', error);
+                        return false;
+                    }
+                })
+                .sort((a, b) => {
+                    try {
+                        const [aSeason, aEpisode] = [parseInt(a[0].split(":")[1]), parseInt(a[0].split(":")[2])];
+                        const [bSeason, bEpisode] = [parseInt(b[0].split(":")[1]), parseInt(b[0].split(":")[2])];
+                        return aSeason !== bSeason ? aSeason - bSeason : aEpisode - bEpisode;
+                    } catch (error) {
+                        console.error('Error sorting episodes:', error);
+                        return 0;
+                    }
+                })
+                .map(([k, v]) => {
+                    try {
+                        return {
+                            id: k,
+                            title: `S${v.season}E${v.episode} - ${v.name}`,
+                            season: v.season,
+                            episode: v.episode,
+                            overview: v.description,
+                            released: new Date(v.year, 0, 1).toISOString(),
+                            thumbnail: v.poster
+                        };
+                    } catch (error) {
+                        console.error('Error creating episode meta:', error);
+                        return null;
+                    }
+                })
+                .filter(episode => episode !== null);
+        }
+        
+        return meta;
+    } catch (error) {
+        console.error('Error creating full meta:', error);
+        return null;
     }
-    
-    return meta;
 };
 
 const createStream = (item) => {
@@ -121,47 +146,75 @@ const createStream = (item) => {
 const builder = new addonBuilder(manifest);
 
 builder.defineStreamHandler(({ id }) => {
-    const item = dataset[id];
-    return Promise.resolve({
-        streams: item ? [createStream(item)] : []
-    });
+    try {
+        const item = dataset[id];
+        return Promise.resolve({
+            streams: item ? [createStream(item)] : []
+        });
+    } catch (error) {
+        console.error('Error in streamHandler:', error);
+        return Promise.resolve({ streams: [] });
+    }
 });
 
 builder.defineCatalogHandler((args) => {
-    const skip = parseInt(args.extra?.skip) || 0;
-    const limit = 20;
-    
-    const items = Object.entries(dataset)
-        .filter(([key, value]) => {
-            if (value.type !== args.type || (value.type === "series" && isEpisode(key))) return false;
-            
-            if (args.extra?.genre) {
-                return value.genre?.some(g => 
-                    g.toLowerCase().includes(args.extra.genre.toLowerCase()) ||
-                    args.extra.genre.toLowerCase().includes(g.toLowerCase())
-                );
-            }
-            
-            return true;
-        })
-        .slice(skip, skip + limit)
-        .map(([key, value]) => createMetaPreview(value, key));
-    
-    return Promise.resolve({ metas: items });
+    try {
+        const skip = parseInt(args.extra?.skip) || 0;
+        const limit = 20;
+        
+        const items = Object.entries(dataset)
+            .filter(([key, value]) => {
+                try {
+                    if (value.type !== args.type || (value.type === "series" && isEpisode(key))) return false;
+                    
+                    if (args.extra?.genre) {
+                        return value.genre?.some(g => 
+                            g.toLowerCase().includes(args.extra.genre.toLowerCase()) ||
+                            args.extra.genre.toLowerCase().includes(g.toLowerCase())
+                        );
+                    }
+                    
+                    return true;
+                } catch (filterError) {
+                    console.error('Error filtering item:', filterError);
+                    return false;
+                }
+            })
+            .slice(skip, skip + limit)
+            .map(([key, value]) => {
+                try {
+                    return createMetaPreview(value, key);
+                } catch (mapError) {
+                    console.error('Error creating meta preview:', mapError);
+                    return null;
+                }
+            })
+            .filter(item => item !== null);
+        
+        return Promise.resolve({ metas: items });
+    } catch (error) {
+        console.error('Error in catalogHandler:', error);
+        return Promise.resolve({ metas: [] });
+    }
 });
 
 builder.defineMetaHandler(({ id }) => {
-    let item = Object.entries(dataset).find(([key]) => key === id);
-    
-    if (!item) {
-        item = Object.entries(dataset).find(([key, value]) => 
-            extractBaseId(key) === id || value.seriesId === id
-        );
+    try {
+        let item = Object.entries(dataset).find(([key]) => key === id);
+        
+        if (!item) {
+            item = Object.entries(dataset).find(([key, value]) => 
+                extractBaseId(key) === id || value.seriesId === id
+            );
+        }
+        
+        return Promise.resolve({
+            meta: item ? createFullMeta(item[1], item[0]) : null
+        });
+    } catch (error) {
+        console.error('Error in metaHandler:', error);
+        return Promise.resolve({ meta: null });
     }
-    
-    return Promise.resolve({
-        meta: item ? createFullMeta(item[1], item[0]) : null
-    });
 });
 
 // Crear servidor Express para el panel de administración
@@ -643,97 +696,154 @@ app.get('/admin', (req, res) => {
 });
 
 app.post('/admin/add-movie', (req, res) => {
-    const movie = req.body;
-    movie.type = 'movie';
-    movie.language = 'Latino';
-    
-    dataset[movie.id] = movie;
-    res.json({ success: true });
+    try {
+        const movie = req.body;
+        
+        // Validación básica
+        if (!movie.id || !movie.name || !movie.url) {
+            return res.json({ success: false, error: 'Campos obligatorios faltantes' });
+        }
+        
+        movie.type = 'movie';
+        movie.language = 'Latino';
+        
+        dataset[movie.id] = movie;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error adding movie:', error);
+        res.json({ success: false, error: 'Error interno del servidor' });
+    }
 });
 
 app.post('/admin/add-series', (req, res) => {
-    const series = req.body;
-    series.type = 'series';
-    series.language = 'Latino';
-    series.seriesId = series.id;
-    series.seriesName = series.name;
-    
-    dataset[series.id] = series;
-    res.json({ success: true });
+    try {
+        const series = req.body;
+        
+        // Validación básica
+        if (!series.id || !series.name) {
+            return res.json({ success: false, error: 'Campos obligatorios faltantes' });
+        }
+        
+        series.type = 'series';
+        series.language = 'Latino';
+        series.seriesId = series.id;
+        series.seriesName = series.name;
+        
+        dataset[series.id] = series;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error adding series:', error);
+        res.json({ success: false, error: 'Error interno del servidor' });
+    }
 });
 
 app.post('/admin/add-episode', (req, res) => {
-    const episode = req.body;
-    const seriesData = dataset[episode.seriesId];
-    
-    if (!seriesData) {
-        return res.json({ success: false, error: 'Serie no encontrada' });
+    try {
+        const episode = req.body;
+        
+        // Validación básica
+        if (!episode.seriesId || !episode.season || !episode.episode || !episode.name || !episode.url) {
+            return res.json({ success: false, error: 'Campos obligatorios faltantes' });
+        }
+        
+        const seriesData = dataset[episode.seriesId];
+        
+        if (!seriesData) {
+            return res.json({ success: false, error: 'Serie no encontrada' });
+        }
+        
+        const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
+        
+        episode.type = 'series';
+        episode.language = 'Latino';
+        episode.seriesName = seriesData.name;
+        episode.genre = seriesData.genre;
+        episode.season = parseInt(episode.season);
+        episode.episode = parseInt(episode.episode);
+        episode.year = episode.year || seriesData.year;
+        
+        dataset[episodeId] = episode;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error adding episode:', error);
+        res.json({ success: false, error: 'Error interno del servidor' });
     }
-    
-    const episodeId = `${episode.seriesId}:${episode.season}:${episode.episode}`;
-    
-    episode.type = 'series';
-    episode.language = 'Latino';
-    episode.seriesName = seriesData.name;
-    episode.genre = seriesData.genre;
-    episode.season = parseInt(episode.season);
-    episode.episode = parseInt(episode.episode);
-    episode.year = episode.year || seriesData.year;
-    
-    dataset[episodeId] = episode;
-    res.json({ success: true });
 });
 
 app.get('/admin/series', (req, res) => {
-    const series = Object.values(dataset)
-        .filter(item => item.type === 'series' && !item.id.includes(':'))
-        .map(s => ({ id: s.id, name: s.name }));
-    res.json(series);
+    try {
+        const series = Object.values(dataset)
+            .filter(item => item.type === 'series' && !item.id.includes(':'))
+            .map(s => ({ id: s.id, name: s.name }));
+        res.json(series);
+    } catch (error) {
+        console.error('Error getting series:', error);
+        res.json([]);
+    }
 });
 
 app.get('/admin/content', (req, res) => {
-    const content = Object.entries(dataset)
-        .map(([key, item]) => ({
-            ...item,
-            id: key,
-            type: item.type === 'series' && key.includes(':') ? 'episode' : item.type
-        }))
-        .sort((a, b) => {
-            if (a.type !== b.type) {
-                const order = { movie: 0, series: 1, episode: 2 };
-                return order[a.type] - order[b.type];
-            }
-            return a.name.localeCompare(b.name);
-        });
-    res.json(content);
+    try {
+        const content = Object.entries(dataset)
+            .map(([key, item]) => ({
+                ...item,
+                id: key,
+                type: item.type === 'series' && key.includes(':') ? 'episode' : item.type
+            }))
+            .sort((a, b) => {
+                try {
+                    if (a.type !== b.type) {
+                        const order = { movie: 0, series: 1, episode: 2 };
+                        return order[a.type] - order[b.type];
+                    }
+                    return a.name.localeCompare(b.name);
+                } catch (error) {
+                    return 0;
+                }
+            });
+        res.json(content);
+    } catch (error) {
+        console.error('Error getting content:', error);
+        res.json([]);
+    }
 });
 
 app.delete('/admin/delete/:id', (req, res) => {
-    const id = req.params.id;
-    
-    if (dataset[id]) {
-        // Si es una serie, también eliminar sus episodios
-        if (dataset[id].type === 'series' && !id.includes(':')) {
-            Object.keys(dataset).forEach(key => {
-                if (key.startsWith(id + ':')) {
-                    delete dataset[key];
-                }
-            });
-        }
+    try {
+        const id = req.params.id;
         
-        delete dataset[id];
-        res.json({ success: true });
-    } else {
-        res.json({ success: false, error: 'Contenido no encontrado' });
+        if (dataset[id]) {
+            // Si es una serie, también eliminar sus episodios
+            if (dataset[id].type === 'series' && !id.includes(':')) {
+                Object.keys(dataset).forEach(key => {
+                    if (key.startsWith(id + ':')) {
+                        delete dataset[key];
+                    }
+                });
+            }
+            
+            delete dataset[id];
+            res.json({ success: true });
+        } else {
+            res.json({ success: false, error: 'Contenido no encontrado' });
+        }
+    } catch (error) {
+        console.error('Error deleting content:', error);
+        res.json({ success: false, error: 'Error interno del servidor' });
     }
 });
 
 app.get('/admin/stats', (req, res) => {
-    const movies = Object.values(dataset).filter(item => item.type === 'movie').length;
-    const series = Object.values(dataset).filter(item => item.type === 'series' && !item.id.includes(':')).length;
-    const episodes = Object.keys(dataset).filter(key => key.includes(':')).length;
-    
-    res.json({ movies, series, episodes });
+    try {
+        const movies = Object.values(dataset).filter(item => item.type === 'movie').length;
+        const series = Object.values(dataset).filter(item => item.type === 'series' && !item.id.includes(':')).length;
+        const episodes = Object.keys(dataset).filter(key => key.includes(':')).length;
+        
+        res.json({ movies, series, episodes });
+    } catch (error) {
+        console.error('Error getting stats:', error);
+        res.json({ movies: 0, series: 0, episodes: 0 });
+    }
 });
 
 // Integrar el addon de Stremio con Express
@@ -742,30 +852,70 @@ const port = process.env.PORT || 3000;
 // Crear servidor que maneje tanto el addon como el panel
 const addonInterface = builder.getInterface();
 
-// Rutas del addon de Stremio
+// Rutas del addon de Stremio con manejo de errores
 app.get('/manifest.json', (req, res) => {
-    res.json(addonInterface.manifest);
+    try {
+        res.json(addonInterface.manifest);
+    } catch (error) {
+        console.error('Error serving manifest:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 });
 
 app.get('/catalog/:type/:id.json', (req, res) => {
-    addonInterface.get(req, res);
+    try {
+        addonInterface.get(req, res);
+    } catch (error) {
+        console.error('Error serving catalog:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 });
 
 app.get('/catalog/:type/:id/:extra.json', (req, res) => {
-    addonInterface.get(req, res);
+    try {
+        addonInterface.get(req, res);
+    } catch (error) {
+        console.error('Error serving catalog with extra:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 });
 
 app.get('/meta/:type/:id.json', (req, res) => {
-    addonInterface.get(req, res);
+    try {
+        addonInterface.get(req, res);
+    } catch (error) {
+        console.error('Error serving meta:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 });
 
 app.get('/stream/:type/:id.json', (req, res) => {
-    addonInterface.get(req, res);
+    try {
+        addonInterface.get(req, res);
+    } catch (error) {
+        console.error('Error serving stream:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 });
 
 // Ruta raíz que redirige al panel
 app.get('/', (req, res) => {
     res.redirect('/admin');
+});
+
+// Manejo de errores global
+app.use((error, req, res, next) => {
+    console.error('Unhandled error:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+});
+
+// Manejo de promesas no capturadas
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
 });
 
 app.listen(port, () => {
@@ -775,8 +925,13 @@ app.listen(port, () => {
     console.log(`🎬 Películas: ${Object.values(dataset).filter(v => v.type === 'movie').length}`);
     console.log(`📺 Series: ${Object.values(dataset).filter(v => v.type === 'series' && !v.id.includes(':')).length}`);
     console.log(`🎞️ Episodios: ${Object.keys(dataset).filter(k => k.includes(':')).length}`);
+}).on('error', (error) => {
+    console.error('Error starting server:', error);
 });
 
 ['SIGINT', 'SIGTERM'].forEach(signal => {
-    process.on(signal, () => process.exit(0));
+    process.on(signal, () => {
+        console.log(`Received ${signal}, shutting down gracefully...`);
+        process.exit(0);
+    });
 });
