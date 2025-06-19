@@ -25,7 +25,7 @@ const manifest = {
     ],
     "idPrefixes": ["latino_", "tt"],
     "behaviorHints": {
-        "adult": false,
+        "adult": true,
         "p2p": true,
         "configurable": false,
         "configurationRequired": false
