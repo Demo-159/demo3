@@ -1014,181 +1014,275 @@ app.get('/admin', (req, res) => {
 
 // API para añadir película
 app.post('/admin/add-movie', (req, res) => {
-    const movie = req.body;
-    
-    if (!movie.id || !movie.name || !movie.url) {
-        return res.status(400).send('Faltan campos requeridos: id, name, url');
+    try {
+        const movie = req.body;
+        
+        if (!movie.id || !movie.name || !movie.url) {
+            return res.status(400).send('Faltan campos requeridos: id, name, url');
+        }
+        
+        if (dataset[movie.id]) {
+            return res.status(400).send('Ya existe una película con ese ID');
+        }
+        
+        dataset[movie.id] = movie;
+        res.send('Película añadida exitosamente');
+    } catch (error) {
+        console.error('Add movie error:', error);
+        res.status(500).send('Error interno del servidor');
     }
-    
-    if (dataset[movie.id]) {
-        return res.status(400).send('Ya existe una película con ese ID');
-    }
-    
-    dataset[movie.id] = movie;
-    res.send('Película añadida exitosamente');
 });
 
 // API para añadir serie
 app.post('/admin/add-series', (req, res) => {
-    const series = req.body;
-    
-    if (!series.id || !series.name) {
-        return res.status(400).send('Faltan campos requeridos: id, name');
+    try {
+        const series = req.body;
+        
+        if (!series.id || !series.name) {
+            return res.status(400).send('Faltan campos requeridos: id, name');
+        }
+        
+        if (dataset[series.id]) {
+            return res.status(400).send('Ya existe una serie con ese ID');
+        }
+        
+        dataset[series.id] = series;
+        res.send('Serie añadida exitosamente');
+    } catch (error) {
+        console.error('Add series error:', error);
+        res.status(500).send('Error interno del servidor');
     }
-    
-    if (dataset[series.id]) {
-        return res.status(400).send('Ya existe una serie con ese ID');
-    }
-    
-    dataset[series.id] = series;
-    res.send('Serie añadida exitosamente');
 });
 
 // API para añadir episodio
 app.post('/admin/add-episode', (req, res) => {
-    const episode = req.body;
-    
-    if (!episode.id || !episode.name || !episode.url || !episode.seriesId) {
-        return res.status(400).send('Faltan campos requeridos: id, name, url, seriesId');
+    try {
+        const episode = req.body;
+        
+        if (!episode.id || !episode.name || !episode.url || !episode.seriesId) {
+            return res.status(400).send('Faltan campos requeridos: id, name, url, seriesId');
+        }
+        
+        if (!dataset[episode.seriesId]) {
+            return res.status(400).send('La serie padre no existe');
+        }
+        
+        if (dataset[episode.id]) {
+            return res.status(400).send('Ya existe un episodio con ese ID');
+        }
+        
+        // Heredar información de la serie padre
+        const parentSeries = dataset[episode.seriesId];
+        episode.genre = parentSeries.genre;
+        episode.year = parentSeries.year;
+        episode.seriesName = parentSeries.name;
+        
+        dataset[episode.id] = episode;
+        res.send('Episodio añadido exitosamente');
+    } catch (error) {
+        console.error('Add episode error:', error);
+        res.status(500).send('Error interno del servidor');
     }
-    
-    if (!dataset[episode.seriesId]) {
-        return res.status(400).send('La serie padre no existe');
-    }
-    
-    if (dataset[episode.id]) {
-        return res.status(400).send('Ya existe un episodio con ese ID');
-    }
-    
-    // Heredar información de la serie padre
-    const parentSeries = dataset[episode.seriesId];
-    episode.genre = parentSeries.genre;
-    episode.year = parentSeries.year;
-    episode.seriesName = parentSeries.name;
-    
-    dataset[episode.id] = episode;
-    res.send('Episodio añadido exitosamente');
 });
 
 // API para obtener lista de series
 app.get('/admin/series-list', (req, res) => {
-    const series = Object.entries(dataset)
-        .filter(([key, value]) => value.type === 'series' && !key.includes(':'))
-        .map(([key, value]) => ({ id: key, name: value.name }));
-    
-    res.json(series);
+    try {
+        const series = Object.entries(dataset)
+            .filter(([key, value]) => value.type === 'series' && !key.includes(':'))
+            .map(([key, value]) => ({ id: key, name: value.name }));
+        
+        res.json(series);
+    } catch (error) {
+        console.error('Series list error:', error);
+        res.status(500).json({ error: 'Error loading series list' });
+    }
 });
 
 // API para obtener lista de contenido
 app.get('/admin/content-list', (req, res) => {
-    const movies = Object.entries(dataset)
-        .filter(([key, value]) => value.type === 'movie')
-        .map(([key, value]) => value);
-    
-    const series = Object.entries(dataset)
-        .filter(([key, value]) => value.type === 'series' && !key.includes(':'))
-        .map(([key, value]) => value);
-    
-    const episodes = Object.entries(dataset)
-        .filter(([key, value]) => value.type === 'series' && key.includes(':'))
-        .map(([key, value]) => value);
-    
-    res.json({ movies, series, episodes });
+    try {
+        const movies = Object.entries(dataset)
+            .filter(([key, value]) => value.type === 'movie')
+            .map(([key, value]) => ({ ...value, key }));
+        
+        const series = Object.entries(dataset)
+            .filter(([key, value]) => value.type === 'series' && !key.includes(':'))
+            .map(([key, value]) => ({ ...value, key }));
+        
+        const episodes = Object.entries(dataset)
+            .filter(([key, value]) => value.type === 'series' && key.includes(':'))
+            .map(([key, value]) => ({ ...value, key }));
+        
+        res.json({ movies, series, episodes });
+    } catch (error) {
+        console.error('Content list error:', error);
+        res.status(500).json({ error: 'Error loading content list' });
+    }
 });
 
 // API para eliminar contenido
 app.delete('/admin/delete/:id', (req, res) => {
-    const id = req.params.id;
-    
-    if (!dataset[id]) {
-        return res.status(404).send('Contenido no encontrado');
+    try {
+        const id = decodeURIComponent(req.params.id);
+        
+        if (!dataset[id]) {
+            return res.status(404).send('Contenido no encontrado');
+        }
+        
+        // Si es una serie, eliminar también sus episodios
+        if (dataset[id].type === 'series' && !id.includes(':')) {
+            Object.keys(dataset).forEach(key => {
+                if (key.startsWith(id + ':')) {
+                    delete dataset[key];
+                }
+            });
+        }
+        
+        delete dataset[id];
+        res.send('Contenido eliminado exitosamente');
+    } catch (error) {
+        console.error('Delete content error:', error);
+        res.status(500).send('Error interno del servidor');
     }
-    
-    // Si es una serie, eliminar también sus episodios
-    if (dataset[id].type === 'series' && !id.includes(':')) {
-        Object.keys(dataset).forEach(key => {
-            if (key.startsWith(id + ':')) {
-                delete dataset[key];
-            }
-        });
-    }
-    
-    delete dataset[id];
-    res.send('Contenido eliminado exitosamente');
 });
 
 // Configurar el addon de Stremio
 const builder = new addonBuilder(manifest);
 
 builder.defineStreamHandler(({ id }) => {
-    const item = dataset[id];
-    return Promise.resolve({
-        streams: item ? [createStream(item)] : []
-    });
+    try {
+        const item = dataset[id];
+        return Promise.resolve({
+            streams: item ? [createStream(item)] : []
+        });
+    } catch (error) {
+        console.error('Stream handler error:', error);
+        return Promise.resolve({ streams: [] });
+    }
 });
 
 builder.defineCatalogHandler((args) => {
-    const skip = parseInt(args.extra?.skip) || 0;
-    const limit = 20;
-    
-    const items = Object.entries(dataset)
-        .filter(([key, value]) => {
-            if (value.type !== args.type || (value.type === "series" && isEpisode(key))) return false;
-            
-            if (args.extra?.genre) {
-                return value.genre?.some(g => 
-                    g.toLowerCase().includes(args.extra.genre.toLowerCase()) ||
-                    args.extra.genre.toLowerCase().includes(g.toLowerCase())
-                );
-            }
-            
-            return true;
-        })
-        .slice(skip, skip + limit)
-        .map(([key, value]) => createMetaPreview(value, key));
-    
-    return Promise.resolve({ metas: items });
+    try {
+        const skip = parseInt(args.extra?.skip) || 0;
+        const limit = 20;
+        
+        const items = Object.entries(dataset)
+            .filter(([key, value]) => {
+                if (value.type !== args.type || (value.type === "series" && isEpisode(key))) return false;
+                
+                if (args.extra?.genre) {
+                    return value.genre?.some(g => 
+                        g.toLowerCase().includes(args.extra.genre.toLowerCase()) ||
+                        args.extra.genre.toLowerCase().includes(g.toLowerCase())
+                    );
+                }
+                
+                return true;
+            })
+            .slice(skip, skip + limit)
+            .map(([key, value]) => createMetaPreview(value, key));
+        
+        return Promise.resolve({ metas: items });
+    } catch (error) {
+        console.error('Catalog handler error:', error);
+        return Promise.resolve({ metas: [] });
+    }
 });
 
 builder.defineMetaHandler(({ id }) => {
-    let item = Object.entries(dataset).find(([key]) => key === id);
-    
-    if (!item) {
-        item = Object.entries(dataset).find(([key, value]) => 
-            extractBaseId(key) === id || value.seriesId === id
-        );
+    try {
+        let item = Object.entries(dataset).find(([key]) => key === id);
+        
+        if (!item) {
+            item = Object.entries(dataset).find(([key, value]) => 
+                extractBaseId(key) === id || value.seriesId === id
+            );
+        }
+        
+        return Promise.resolve({
+            meta: item ? createFullMeta(item[1], item[0]) : null
+        });
+    } catch (error) {
+        console.error('Meta handler error:', error);
+        return Promise.resolve({ meta: null });
     }
-    
-    return Promise.resolve({
-        meta: item ? createFullMeta(item[1], item[0]) : null
-    });
 });
 
 // Configurar servidor
 const port = process.env.PORT || 3000;
 
-// Combinar Express con el addon de Stremio
-const addonInterface = builder.getInterface();
-
-// Rutas del addon
+// Configurar rutas del addon de Stremio
 app.get('/manifest.json', (req, res) => {
-    res.json(addonInterface.manifest);
+    res.json(manifest);
 });
 
-app.get('/catalog/:type/:id.json', (req, res) => {
-    addonInterface.get(`/catalog/${req.params.type}/${req.params.id}.json`, req, res);
+app.get('/catalog/:type/:id.json', async (req, res) => {
+    try {
+        const args = {
+            type: req.params.type,
+            id: req.params.id,
+            extra: {}
+        };
+        const result = await builder.getInterface().catalog(args);
+        res.json(result);
+    } catch (error) {
+        console.error('Catalog error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.get('/catalog/:type/:id/:extra.json', (req, res) => {
-    addonInterface.get(`/catalog/${req.params.type}/${req.params.id}/${req.params.extra}.json`, req, res);
+app.get('/catalog/:type/:id/:extra.json', async (req, res) => {
+    try {
+        const args = {
+            type: req.params.type,
+            id: req.params.id,
+            extra: {}
+        };
+        
+        // Parsear parámetros extra
+        const extraParams = req.params.extra.split('&');
+        extraParams.forEach(param => {
+            const [key, value] = param.split('=');
+            if (key && value) {
+                args.extra[key] = decodeURIComponent(value);
+            }
+        });
+        
+        const result = await builder.getInterface().catalog(args);
+        res.json(result);
+    } catch (error) {
+        console.error('Catalog with extra error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.get('/meta/:type/:id.json', (req, res) => {
-    addonInterface.get(`/meta/${req.params.type}/${req.params.id}.json`, req, res);
+app.get('/meta/:type/:id.json', async (req, res) => {
+    try {
+        const args = {
+            type: req.params.type,
+            id: req.params.id
+        };
+        const result = await builder.getInterface().meta(args);
+        res.json(result);
+    } catch (error) {
+        console.error('Meta error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.get('/stream/:type/:id.json', (req, res) => {
-    addonInterface.get(`/stream/${req.params.type}/${req.params.id}.json`, req, res);
+app.get('/stream/:type/:id.json', async (req, res) => {
+    try {
+        const args = {
+            type: req.params.type,
+            id: req.params.id
+        };
+        const result = await builder.getInterface().stream(args);
+        res.json(result);
+    } catch (error) {
+        console.error('Stream error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // Iniciar servidor
