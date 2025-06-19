@@ -12,13 +12,13 @@ const manifest = {
         {
             type: "movie",
             id: "peliculas-latino-cl",
-            name: "Películas Latino",
+            name: "Recomendación",
             extra: [{ name: "genre", options: ["Acción", "Comedia", "Drama", "Animación", "Aventura", "Familiar"] }]
         },
         {
             type: "series",
             id: "series-latino-cl",
-            name: "Series Latino",
+            name: "Recomendación",
             extra: [{ name: "genre", options: ["Comedia", "Animación", "Familiar", "Drama"] }]
         }
     ],
