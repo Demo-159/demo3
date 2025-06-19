@@ -3,7 +3,7 @@ const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 const manifest = {
     "id": "org.stremio.addon-latino-chile",
     "version": "1.1.0",
-    "name": "Catálogo de Contenidos",
+    "name": "Reproducir ahora",
     "description": "Contenido en español latino - Películas y series",
     "icon": "https://via.placeholder.com/256x256/FF6B6B/FFFFFF?text=CHILE",
     "background": "https://via.placeholder.com/1920x1080/4ECDC4/FFFFFF?text=LATINO+CHILE",
