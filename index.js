@@ -108,7 +108,7 @@ const dataset = {
         seriesId: "tt0229889",
         seriesName: "El Chavo del 8",
         genre: ["Comedia", "Familiar"],
-        year: 1971,
+        year: 1972-1983,
         director: "Roberto Gómez Bolaños",
         cast: ["Roberto Gómez Bolaños", "Ramón Valdés", "Carlos Villagrán", "María Antonieta de las Nieves"],
         description: "Las aventuras de un niño huérfano que vive en una vecindad y sus travesuras con los demás habitantes del lugar.",
