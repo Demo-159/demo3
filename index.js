@@ -128,7 +128,7 @@ const dataset = {
         seriesId: "tt0229889",
         seriesName: "El Chavo del 8",
         description: "Don Ramón asusta a la Chilindrina con el ropavejero para que tome su medicina, pero El Chavo lo cree real y la ayuda a esconderse, causando enredos en la vecindad.",
-        poster: "https://m.media-amazon.com/images/M/MV5BNzA4Zjk3NzktYWU0ZC00YWQyLWFkYTYtOGM4OTJlYWRhYzEyXkEyXkFqcGdeQXVyNzI1NzMxNzM@._V1_SX300.jpg",
+        poster: "https://archive.org/download/El-Chavo-Del-8-1971/El-Chavo-Del-8-1971.thumbs/001%20El%20Ropavejero_000001.jpg",
         runtime: "8 min",
         url: "https://ia802309.us.archive.org/35/items/El-Chavo-Del-8-1971/001%20El%20Ropavejero.mp4",
         quality: "1080p",
